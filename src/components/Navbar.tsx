@@ -15,7 +15,8 @@ import {
   Sparkles,
   Home,
   CheckCircle2,
-  Clock
+  Clock,
+  HelpCircle
 } from 'lucide-react';
 import { UserRole } from '../types';
 import { getCurrentUser } from '../services/authService';
@@ -45,9 +46,9 @@ export const Navbar: React.FC<NavbarProps> = ({
 
   const navLinks: { tab: 'home' | 'order' | 'tracking' | 'howItWorks' | 'history'; label: string; icon: any }[] = [
     { tab: 'home', label: 'Beranda', icon: Home },
-    { tab: 'order', label: 'Pesan Jastip', icon: PlusCircle },
+    { tab: 'order', label: 'Buat Pesanan', icon: PlusCircle },
     { tab: 'tracking', label: 'Lacak Pesanan', icon: Search },
-    { tab: 'howItWorks', label: 'Cara Kerja', icon: Info },
+    { tab: 'howItWorks', label: 'Cara Kerja & FAQ', icon: HelpCircle },
     { tab: 'history', label: 'Riwayat', icon: History },
   ];
 
@@ -65,16 +66,15 @@ export const Navbar: React.FC<NavbarProps> = ({
               <img
                 src="/mas-jastip-logo.png"
                 alt="Logo Resmi MAS JASTIP Purbolinggo"
-                className="w-11 h-11 sm:w-13 sm:h-13 rounded-2xl object-cover ring-2 ring-orange-500/80 shadow-md group-hover:scale-105 transition-transform bg-white"
+                className="w-11 h-11 sm:w-12 sm:h-12 rounded-2xl object-cover ring-2 ring-orange-500/80 shadow-md group-hover:scale-105 transition-transform bg-white"
                 onError={(e) => {
-                  // Fallback to jsp-logo if needed
                   const target = e.target as HTMLImageElement;
                   if (!target.src.includes('jsp-logo.png')) {
                     target.src = '/jsp-logo.png';
                   }
                 }}
               />
-              <span className="absolute -bottom-1 -right-1 w-3.5 h-3.5 bg-emerald-500 border-2 border-white rounded-full" title="Rider Siap Antar"></span>
+              <span className="absolute -bottom-1 -right-1 w-3.5 h-3.5 bg-emerald-500 border-2 border-white rounded-full" title="Rider Aktif Siap Melayani"></span>
             </div>
 
             <div className="min-w-0">
@@ -88,9 +88,9 @@ export const Navbar: React.FC<NavbarProps> = ({
               </div>
               <p className="text-[11px] sm:text-xs text-slate-500 font-medium truncate flex items-center gap-1.5 mt-0.5">
                 <span className="hidden xs:inline">Jasa Titip &amp; Suruh Cepat</span>
-                <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-600 bg-emerald-50 px-1.5 py-0.2 rounded border border-emerald-200">
+                <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded-md border border-emerald-200">
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping"></span>
-                  Buka 10-21 WIB
+                  Buka 10.00 - 21.00 WIB
                 </span>
               </p>
             </div>
@@ -108,7 +108,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                   onClick={() => handleNav(item.tab)}
                   className={`px-3.5 py-2 rounded-xl transition flex items-center gap-1.5 ${
                     isActive
-                      ? 'text-blue-600 bg-blue-50 font-bold shadow-2xs'
+                      ? 'text-blue-600 bg-blue-50/80 font-bold shadow-2xs border border-blue-200/50'
                       : 'hover:text-blue-600 hover:bg-slate-50'
                   }`}
                 >
@@ -119,16 +119,16 @@ export const Navbar: React.FC<NavbarProps> = ({
             })}
           </nav>
 
-          {/* Right Actions: Profile, Role Badge & CTA */}
+          {/* Right Actions: WhatsApp Hotline, Role Mode, Profile & CTA */}
           <div className="flex items-center gap-2 sm:gap-3">
             
             {/* Quick WhatsApp Support (Desktop) */}
             <a
-              href="https://wa.me/6285789528805?text=Halo%20MAS%20JASTIP%20Purbolinggo%2C%20saya%20butuh%20bantuan"
+              href="https://wa.me/6285789528805?text=Halo%20MAS%20JASTIP%20Purbolinggo%2C%20saya%20mau%20konsultasi%20jasa"
               target="_blank"
               rel="noopener noreferrer"
-              className="hidden xl:flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1.5 rounded-xl text-slate-600 hover:text-emerald-600 hover:bg-emerald-50 transition border border-transparent hover:border-emerald-200"
-              title="Konsultasi CS WhatsApp"
+              className="hidden xl:flex items-center gap-1.5 text-xs font-bold px-3 py-2 rounded-xl text-emerald-700 bg-emerald-50 hover:bg-emerald-100/80 transition border border-emerald-200 shadow-2xs"
+              title="Konsultasi CS WhatsApp Resmi"
             >
               <Phone className="w-3.5 h-3.5 text-emerald-600" />
               <span>0857-8952-8805</span>
@@ -166,7 +166,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 type="button"
                 onClick={onOpenLogin}
                 className="hidden sm:flex items-center gap-1.5 text-xs font-semibold px-3 py-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 transition shrink-0 shadow-2xs"
-                title="Masuk / Akun"
+                title="Masuk / Akun Petugas"
               >
                 <LogIn className="w-3.5 h-3.5 text-blue-600" />
                 <span>Masuk</span>
@@ -197,7 +197,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             {/* Main Primary CTA: Buat Pesanan */}
             <button
               onClick={() => handleNav('order')}
-              className="bg-gradient-to-r from-orange-500 via-amber-500 to-orange-600 hover:brightness-105 active:scale-95 text-white font-extrabold px-3.5 sm:px-5 py-2 sm:py-2.5 rounded-xl transition text-xs sm:text-sm flex items-center gap-1.5 sm:gap-2 shadow-md shadow-orange-500/20 shrink-0"
+              className="bg-gradient-to-r from-orange-500 via-amber-500 to-orange-600 hover:brightness-105 active:scale-95 text-white font-extrabold px-3.5 sm:px-5 py-2 sm:py-2.5 rounded-xl transition text-xs sm:text-sm flex items-center gap-1.5 sm:gap-2 shadow-md shadow-orange-500/20 shrink-0 cursor-pointer"
             >
               <PlusCircle className="w-4 h-4 text-white" />
               <span className="hidden xs:inline">Pesan Sekarang</span>
@@ -277,10 +277,10 @@ export const Navbar: React.FC<NavbarProps> = ({
 
             {/* Direct WhatsApp CS */}
             <a
-              href="https://wa.me/6285789528805?text=Halo%20MAS%20JASTIP%20Purbolinggo%2C%20saya%20mau%20konsultasi%20jasa"
+              href="https://wa.me/6285789528805?text=Halo%20MAS%20JASTIP%20Purbolinggo%2C%20saya%20mau%20order%20jasa"
               target="_blank"
               rel="noopener noreferrer"
-              className="w-full py-2.5 px-3 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-black flex items-center justify-center gap-2 transition"
+              className="w-full py-2.5 px-3 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-black flex items-center justify-center gap-2 transition shadow-md shadow-emerald-500/20"
             >
               <Phone className="w-4 h-4" />
               <span>Chat CS WhatsApp: 0857-8952-8805</span>

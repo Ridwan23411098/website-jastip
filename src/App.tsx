@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Navbar } from './components/Navbar';
 import { HeroSection } from './components/HeroSection';
 import { OrderForm } from './components/OrderForm';
@@ -29,7 +29,10 @@ import {
   History,
   Info,
   Clock,
-  Sparkles
+  Sparkles,
+  HelpCircle,
+  MapPin,
+  Lock
 } from 'lucide-react';
 
 export const App: React.FC = () => {
@@ -53,6 +56,9 @@ export const App: React.FC = () => {
 
   // Selected service type when clicked from Hero
   const [selectedServiceType, setSelectedServiceType] = useState<ServiceType | undefined>(undefined);
+
+  // Quick Tracking input on Home
+  const [quickTrackInput, setQuickTrackInput] = useState('');
 
   useEffect(() => {
     return subscribeToStore(() => {
@@ -107,21 +113,32 @@ export const App: React.FC = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
+  const handleQuickTrackSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!quickTrackInput.trim()) return;
+    setActiveTrackingCode(quickTrackInput.trim());
+    setCurrentTab('tracking');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   return (
     <div className="min-h-screen bg-slate-50 text-slate-800 flex flex-col font-sans selection:bg-orange-500 selection:text-white">
       
-      {/* Top Professional Announcement Bar with Discreet Testing Mode */}
-      <div className="bg-gradient-to-r from-slate-900 via-blue-950 to-slate-900 text-slate-300 text-[11px] sm:text-xs py-1.5 px-3.5 sm:px-6 border-b border-slate-800 flex items-center justify-between gap-3 overflow-x-auto no-scrollbar">
+      {/* Top Professional Consumer Banner */}
+      <div className="bg-gradient-to-r from-slate-900 via-blue-950 to-slate-900 text-slate-300 text-[11px] sm:text-xs py-2 px-3.5 sm:px-6 border-b border-slate-800 flex items-center justify-between gap-3 overflow-x-auto no-scrollbar">
         
         {/* Left: Live Status & Hours */}
         <div className="flex items-center gap-2 shrink-0">
-          <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-          <span className="font-semibold text-white">Buka 10.00 - 21.00 WIB</span>
+          <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+          <span className="font-bold text-white">Buka Setiap Hari (10.00 - 21.00 WIB)</span>
           <span className="text-slate-500 hidden sm:inline">•</span>
-          <span className="text-slate-300 hidden sm:inline">Melayani Seluruh Purbolinggo &amp; Rute Kota Metro</span>
+          <span className="text-slate-300 hidden sm:inline flex items-center gap-1">
+            <MapPin className="w-3 h-3 text-orange-400 inline" />
+            <span>Melayani 12 Desa Purbolinggo &amp; Rute Kota Metro</span>
+          </span>
         </div>
 
-        {/* Center / Right: Hotline & Subtle Role Mode Switcher */}
+        {/* Center / Right: Hotline & Clean Staff Access Link */}
         <div className="flex items-center gap-3 shrink-0">
           <a
             href="https://wa.me/6285789528805?text=Halo%20MAS%20JASTIP%20Purbolinggo%2C%20saya%20mau%20order%20jasa"
@@ -130,47 +147,20 @@ export const App: React.FC = () => {
             className="text-amber-300 hover:text-amber-200 transition font-bold flex items-center gap-1"
           >
             <Phone className="w-3 h-3 text-emerald-400" />
-            <span>WA: 0857-8952-8805</span>
+            <span>Hotline: 0857-8952-8805</span>
           </a>
 
-          <span className="text-slate-600 hidden md:inline">|</span>
+          <span className="text-slate-700 hidden md:inline">|</span>
 
-          {/* Discreet Testing Switcher for User, Admin, Courier */}
-          <div className="hidden md:flex items-center gap-1 bg-slate-800/80 rounded-lg p-0.5 border border-slate-700/80">
-            <button
-              onClick={() => handleRoleSelect('customer')}
-              className={`px-2 py-0.5 rounded-md text-[10px] font-bold transition flex items-center gap-1 ${
-                currentRole === 'customer'
-                  ? 'bg-blue-600 text-white'
-                  : 'text-slate-400 hover:text-white'
-              }`}
-            >
-              <User className="w-3 h-3" />
-              <span>Pelanggan</span>
-            </button>
-            <button
-              onClick={() => handleRoleSelect('courier')}
-              className={`px-2 py-0.5 rounded-md text-[10px] font-bold transition flex items-center gap-1 ${
-                currentRole === 'courier'
-                  ? 'bg-emerald-600 text-white'
-                  : 'text-slate-400 hover:text-white'
-              }`}
-            >
-              <Bike className="w-3 h-3" />
-              <span>Kurir</span>
-            </button>
-            <button
-              onClick={() => handleRoleSelect('admin')}
-              className={`px-2 py-0.5 rounded-md text-[10px] font-bold transition flex items-center gap-1 ${
-                currentRole === 'admin'
-                  ? 'bg-purple-600 text-white'
-                  : 'text-slate-400 hover:text-white'
-              }`}
-            >
-              <Shield className="w-3 h-3" />
-              <span>Admin</span>
-            </button>
-          </div>
+          {/* Discrete Staff / Role Portal */}
+          <button
+            onClick={() => setLoginModalOpen(true)}
+            className="hidden md:flex items-center gap-1 text-[11px] text-slate-400 hover:text-white transition px-2 py-0.5 rounded-md hover:bg-slate-800"
+            title="Masuk sebagai Kurir atau Admin"
+          >
+            <Lock className="w-2.5 h-2.5" />
+            <span>Portal Petugas</span>
+          </button>
         </div>
 
       </div>
@@ -211,9 +201,9 @@ export const App: React.FC = () => {
               }}
             />
 
-            {/* Quick Live Tracking Search Callout */}
-            <div className="bg-white border border-slate-200/90 rounded-3xl p-6 sm:p-8 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-5">
-              <div className="space-y-1">
+            {/* Quick Live Tracking Search Callout Card */}
+            <div className="bg-white border border-slate-200/90 rounded-3xl p-6 sm:p-8 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-6">
+              <div className="space-y-1.5">
                 <div className="inline-flex items-center gap-1.5 text-xs font-bold text-blue-600 bg-blue-50 px-2.5 py-0.5 rounded-full border border-blue-200">
                   <Search className="w-3.5 h-3.5" />
                   <span>Pelacakan Realtime</span>
@@ -222,23 +212,29 @@ export const App: React.FC = () => {
                   Sudah Memiliki Nomor Pesanan?
                 </h3>
                 <p className="text-xs sm:text-sm text-slate-500 max-w-xl leading-relaxed">
-                  Pantau posisi perjalanan kurir dan perkiraan tiba langsung di peta interaktif secara transparan.
+                  Masukkan kode pesanan Anda (contoh: <code>MJ-2026-001</code>) untuk memantau pergerakan motor kurir di peta secara langsung.
                 </p>
               </div>
 
-              <div className="flex items-center gap-3 shrink-0">
+              <form onSubmit={handleQuickTrackSubmit} className="flex flex-col sm:flex-row items-center gap-2.5 w-full md:w-auto shrink-0">
+                <div className="relative w-full sm:w-64">
+                  <input
+                    type="text"
+                    value={quickTrackInput}
+                    onChange={(e) => setQuickTrackInput(e.target.value)}
+                    placeholder="Contoh: MJ-2026-001"
+                    className="w-full text-xs sm:text-sm p-3 pl-9 rounded-2xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 font-medium"
+                  />
+                  <Search className="w-4 h-4 text-slate-400 absolute left-3 top-3.5" />
+                </div>
                 <button
-                  type="button"
-                  onClick={() => {
-                    setCurrentTab('tracking');
-                    window.scrollTo({ top: 0, behavior: 'smooth' });
-                  }}
-                  className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white font-bold px-6 py-3 rounded-2xl transition text-xs sm:text-sm flex items-center justify-center gap-2 shadow-md shadow-blue-600/20 active:scale-95 cursor-pointer"
+                  type="submit"
+                  className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white font-bold px-5 py-3 rounded-2xl transition text-xs sm:text-sm flex items-center justify-center gap-2 shadow-md shadow-blue-600/20 cursor-pointer shrink-0"
                 >
-                  <span>Buka Pelacakan Pesanan</span>
+                  <span>Lacak Pesanan</span>
                   <ArrowRight className="w-4 h-4" />
                 </button>
-              </div>
+              </form>
             </div>
           </div>
         )}
@@ -266,7 +262,7 @@ export const App: React.FC = () => {
           />
         )}
 
-        {/* VIEW: CARA KERJA */}
+        {/* VIEW: CARA KERJA & FAQ */}
         {currentTab === 'howItWorks' && (
           <HowItWorksSection
             onStartOrder={() => {
@@ -314,7 +310,7 @@ export const App: React.FC = () => {
         onLoginSuccess={handleLoginSuccess}
       />
 
-      {/* Mobile App-Style Bottom Navigation Bar (Thumbs Friendly) */}
+      {/* Mobile App-Style Bottom Navigation Bar (Ultra-Friendly Thumbs Reach) */}
       <nav className="fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-slate-200/90 py-1.5 px-3 flex items-center justify-around lg:hidden shadow-xl">
         <button
           type="button"
@@ -344,17 +340,30 @@ export const App: React.FC = () => {
           <span className="text-[10px]">Lacak</span>
         </button>
 
-        {/* Center Primary Action: Pesan */}
+        {/* Center Primary Action: Pesan (Floating) */}
         <button
           type="button"
           onClick={() => {
             setCurrentTab('order');
             window.scrollTo({ top: 0, behavior: 'smooth' });
           }}
-          className="relative -top-3.5 bg-gradient-to-r from-orange-500 via-amber-500 to-orange-600 text-white p-3.5 rounded-full shadow-lg shadow-orange-500/35 active:scale-95 transition-transform flex flex-col items-center"
+          className="relative -top-3.5 bg-gradient-to-r from-orange-500 via-amber-500 to-orange-600 text-white p-3.5 rounded-full shadow-lg shadow-orange-500/35 active:scale-95 transition-transform flex flex-col items-center cursor-pointer"
         >
           <PlusCircle className="w-6 h-6" />
-          <span className="sr-only">Pesan</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => {
+            setCurrentTab('howItWorks');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+          }}
+          className={`flex flex-col items-center gap-0.5 p-1 rounded-xl transition ${
+            currentTab === 'howItWorks' ? 'text-blue-600 font-bold' : 'text-slate-500 hover:text-slate-800'
+          }`}
+        >
+          <HelpCircle className="w-5 h-5" />
+          <span className="text-[10px]">Panduan</span>
         </button>
 
         <button
@@ -370,31 +379,7 @@ export const App: React.FC = () => {
           <History className="w-5 h-5" />
           <span className="text-[10px]">Riwayat</span>
         </button>
-
-        <a
-          href="https://wa.me/6285789528805?text=Halo%20MAS%20JASTIP%20Purbolinggo%2C%20saya%20mau%20order%20jasa"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="flex flex-col items-center gap-0.5 p-1 rounded-xl text-emerald-600 hover:text-emerald-700 transition"
-        >
-          <Phone className="w-5 h-5" />
-          <span className="text-[10px] font-bold">CS WA</span>
-        </a>
       </nav>
-
-      {/* Persistent Floating WhatsApp Button for Desktop Screens */}
-      <div className="hidden lg:flex fixed bottom-6 right-6 z-40 flex-col items-end gap-2.5">
-        <a
-          href="https://wa.me/6285789528805?text=Halo%20MAS%20JASTIP%20Purbolinggo%2C%20saya%20mau%20order%20jasa"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="flex items-center gap-2.5 bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-3 rounded-full shadow-xl shadow-emerald-500/30 transition-all hover:scale-105 active:scale-95 text-xs font-black group cursor-pointer"
-          title="Chat WhatsApp MAS JASTIP (0857-8952-8805)"
-        >
-          <Phone className="w-4 h-4 fill-current group-hover:rotate-12 transition-transform" />
-          <span>Chat WhatsApp Rider</span>
-        </a>
-      </div>
 
     </div>
   );
