@@ -125,7 +125,7 @@ export const App: React.FC = () => {
     <div className="min-h-screen bg-slate-50 text-slate-800 flex flex-col font-sans selection:bg-orange-500 selection:text-white">
       
       {/* Top Professional Consumer Banner */}
-      <div className="bg-gradient-to-r from-slate-900 via-blue-950 to-slate-900 text-slate-300 text-[11px] sm:text-xs py-2 px-3.5 sm:px-6 border-b border-slate-800 flex items-center justify-between gap-3 overflow-x-auto no-scrollbar">
+      <div className="bg-slate-950 text-slate-300 text-[11px] sm:text-xs py-2 px-3.5 sm:px-6 border-b border-slate-800 flex items-center justify-between gap-3 overflow-x-auto no-scrollbar">
         
         {/* Left: Live Status & Hours */}
         <div className="flex items-center gap-2 shrink-0">
@@ -144,7 +144,7 @@ export const App: React.FC = () => {
             href="https://wa.me/6285789528805?text=Halo%20MAS%20JASTIP%20Purbolinggo%2C%20saya%20mau%20order%20jasa"
             target="_blank"
             rel="noopener noreferrer"
-            className="text-amber-300 hover:text-amber-200 transition font-bold flex items-center gap-1"
+            className="text-orange-400 hover:text-orange-300 transition font-bold flex items-center gap-1"
           >
             <Phone className="w-3 h-3 text-emerald-400" />
             <span>Hotline: 0857-8952-8805</span>

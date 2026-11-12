@@ -3,11 +3,8 @@ import {
   MapPin,
   Calculator,
   ShoppingBag,
-  Send,
   Phone,
   User,
-  FileText,
-  CreditCard,
   CheckCircle2,
   Navigation,
   Info,
@@ -28,7 +25,8 @@ import {
   Map,
   MessageCircle,
   Banknote,
-  Receipt
+  Receipt,
+  CreditCard
 } from 'lucide-react';
 import { ServiceType, Order } from '../types';
 import { MapPicker } from './MapPicker';
@@ -55,60 +53,63 @@ interface OrderFormProps {
   initialServiceType?: ServiceType;
 }
 
+// 7 Layanan Resmi MAS JASTIP Purbolinggo
 const MAS_SERVICES: { type: ServiceType; label: string; desc: string; icon: any }[] = [
   {
     type: 'Pesanin Makanan/Minuman',
-    label: 'Pesanin Makanan/Minuman',
-    desc: 'Titip beli makanan, minuman, pecel, bakso, geprek & jajanan warung terdekat.',
+    label: 'Makanan & Minuman',
+    desc: 'Titip beli kuliner resto, warung makan, pecel, bakso, geprek & jajanan terdekat.',
     icon: Utensils,
   },
   {
     type: 'Ambil / Antar Barang',
-    label: 'Ambil / Antar Barang',
-    desc: 'Ambil paket ekspedisi (J&T, SiCepat, Shopee, JNE), dokumen, atau barang titipan.',
+    label: 'Ambil / Antar Paket',
+    desc: 'Ambil paket ekspedisi (J&T, SiCepat, Shopee, JNE), berkas, atau barang titipan.',
     icon: Package,
   },
   {
     type: 'Order (Titip Belanja)',
-    label: 'Order (Titip Belanja)',
-    desc: 'Titip belanja sembako pasar, apotek, swalayan, atau belanja kebutuhan ke Kota Metro.',
+    label: 'Titip Belanja Pasar',
+    desc: 'Belanja sayur, sembako pasar, apotek, swalayan, atau belanja ke Kota Metro.',
     icon: ShoppingCart,
   },
   {
     type: 'Jemput / Antar Orang',
-    label: 'Jemput / Antar Orang',
+    label: 'Ojek Antar Jemput',
     desc: 'Ojek lokal antar jemput warga desa, anak sekolah, puskesmas & pasar.',
     icon: UserCheck,
   },
   {
-    type: 'Ambil / Antar Hewan Peliharaan',
-    label: 'Ambil / Antar Hewan Peliharaan',
-    desc: 'Antar jemput kucing/hewan peliharaan aman ke petshop atau dokter hewan.',
-    icon: Heart,
-  },
-  {
     type: 'Delivery',
-    label: 'Delivery Olshop / Toko',
+    label: 'Delivery Olshop UMKM',
     desc: 'Kurir pengantaran jualan online warga Purbolinggo langsung ke pembeli.',
     icon: Bike,
   },
   {
+    type: 'Ambil / Antar Hewan Peliharaan',
+    label: 'Antar Jemput Hewan',
+    desc: 'Antar jemput kucing/hewan peliharaan aman ke petshop atau dokter hewan.',
+    icon: Heart,
+  },
+  {
     type: 'Dan lain-lain',
-    label: 'Dan lain-lain',
+    label: 'Layanan Lain-lain',
     desc: 'Layanan suruh serbaguna lainnya sesuai permintaan warga (Amanah, Cepat, Ramah).',
     icon: Sparkles,
   },
 ];
 
+// Presets Titik Jemput Populer di Purbolinggo & Sekitarnya
 const QUICK_PICKUP_SPOTS = [
   { name: 'Pasar Purbolinggo (Simpang)', lat: -5.0078, lng: 105.4875 },
-  { name: 'J&T Express Purbolinggo', lat: -5.0085, lng: 105.4880 },
+  { name: 'Drop Point J&T Purbolinggo', lat: -5.0085, lng: 105.4880 },
   { name: 'Minimarket Simpang Pasar', lat: -5.0075, lng: 105.4870 },
   { name: 'Chandra Superstore Kota Metro', lat: -5.1135, lng: 105.3072 },
   { name: 'PB Swalayan Kota Metro', lat: -5.1118, lng: 105.3085 },
   { name: 'Pasar Kotagajah Lamteng', lat: -4.9820, lng: 105.3280 },
 ];
 
+// Presets Desa Tujuan Pengantaran (12 Desa di Kec. Purbolinggo)
 const QUICK_DEST_VILLAGES = [
   { name: 'Desa Taman Fajar (Pusat)', lat: -5.0092, lng: 105.4880 },
   { name: 'Desa Taman Endah', lat: -5.0185, lng: 105.5020 },
@@ -390,55 +391,52 @@ export const OrderForm: React.FC<OrderFormProps> = ({ onOrderCreated, onCancel, 
   };
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6">
+    <div className="max-w-3xl mx-auto space-y-6">
       
-      {/* Operating Hours & Hotline Strip */}
-      <div className="bg-gradient-to-r from-slate-900 via-blue-950 to-slate-900 border border-blue-900/60 rounded-3xl p-3 sm:p-4 text-white shadow-md flex flex-wrap items-center justify-between gap-3 text-xs">
+      {/* Operating Hours Strip */}
+      <div className="bg-white border border-slate-200/90 rounded-2xl p-4 shadow-2xs flex flex-wrap items-center justify-between gap-3 text-xs">
         <div className="flex items-center gap-2.5">
           <img
             src="/mas-jastip-logo.png"
-            alt="Logo MAS JASTIP"
-            className="w-9 h-9 rounded-full object-cover ring-2 ring-orange-500 shadow-sm shrink-0"
+            alt="MAS JASTIP"
+            className="w-8 h-8 rounded-xl object-cover ring-1 ring-slate-200 shrink-0"
           />
-          <div className="flex items-center gap-1.5 flex-wrap">
-            <span className="font-black tracking-wide text-white">MAS JASTIP</span>
-            <span className="text-[10px] font-black px-2 py-0.5 rounded-full bg-gradient-to-r from-orange-500 to-amber-500 text-white shadow-2xs">Purbolinggo</span>
-            <span className="hidden sm:inline text-sky-200">• Buka 10.00 - 21.00 WIB</span>
+          <div>
+            <div className="font-bold text-slate-900 flex items-center gap-1.5">
+              <span>MAS JASTIP Purbolinggo</span>
+              <span className="text-[10px] text-emerald-700 bg-emerald-50 px-1.5 py-0.2 rounded border border-emerald-200 font-semibold">
+                ● Buka 10.00 - 21.00 WIB
+              </span>
+            </div>
+            <div className="text-[11px] text-slate-500 font-medium">
+              Ongkos dihitung transparan per KM rute jalan raya
+            </div>
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
-          <span className="bg-white/10 px-2.5 py-1 rounded-lg font-bold text-amber-300 border border-white/10">
-            ONGKIR PER KM
-          </span>
-          <a
-            href="https://wa.me/6285789528805?text=Halo%20MAS%20JASTIP%20Purbolinggo%2C%20saya%20mau%20order%20jasa"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="bg-emerald-500 hover:bg-emerald-600 px-3 py-1 rounded-lg font-bold transition flex items-center gap-1 shadow-xs text-white"
-            title="Chat WhatsApp MAS JASTIP"
-          >
-            <Phone className="w-3.5 h-3.5" />
-            <span>0857-8952-8805</span>
-          </a>
-        </div>
+        <a
+          href="https://wa.me/6285789528805?text=Halo%20MAS%20JASTIP%20Purbolinggo%2C%20saya%20mau%20order%20jasa"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="bg-emerald-600 hover:bg-emerald-700 px-3 py-1.5 rounded-xl font-bold transition flex items-center gap-1 text-white shadow-2xs"
+          title="Chat CS WhatsApp"
+        >
+          <Phone className="w-3.5 h-3.5" />
+          <span>0857-8952-8805</span>
+        </a>
       </div>
 
-      {/* Main Order Card */}
-      <div className="bg-white border border-slate-200/90 rounded-3xl p-4 sm:p-8 lg:p-10 shadow-xs">
+      {/* Main Order Container */}
+      <div className="bg-white border border-slate-200/90 rounded-3xl p-5 sm:p-8 shadow-xs">
         
         {/* Form Title & Guide */}
-        <div className="pb-6 border-b border-slate-100 mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="pb-5 border-b border-slate-100 mb-6 flex items-center justify-between gap-4">
           <div>
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-orange-50 text-orange-700 text-xs font-bold mb-2 border border-orange-200">
-              <Sparkles className="w-4 h-4 text-orange-600" />
-              <span>Formulir Pesanan Praktis &amp; Mudah</span>
-            </div>
-            <h2 className="text-xl sm:text-3xl font-black text-slate-900 tracking-tight font-heading">
-              Buat Pesanan Titip / Suruh
+            <h2 className="text-xl sm:text-2xl font-extrabold text-slate-900 tracking-tight font-heading">
+              Formulir Pemesanan Jastip
             </h2>
-            <p className="text-xs sm:text-sm text-slate-500 mt-1">
-              Isi formulir di bawah ini dengan mudah. Ongkos dihitung transparan per KM jalan raya riil.
+            <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
+              Tentukan layanan dan lokasi penjemputan dengan mudah.
             </p>
           </div>
 
@@ -446,7 +444,7 @@ export const OrderForm: React.FC<OrderFormProps> = ({ onOrderCreated, onCancel, 
             <button
               type="button"
               onClick={onCancel}
-              className="self-start sm:self-center px-4 py-2 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-100 transition cursor-pointer"
+              className="px-3 py-1.5 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-100 transition cursor-pointer"
             >
               Batal
             </button>
@@ -455,27 +453,22 @@ export const OrderForm: React.FC<OrderFormProps> = ({ onOrderCreated, onCancel, 
 
         {/* Error Alert */}
         {errorMessage && (
-          <div className="mb-6 p-4 rounded-2xl bg-red-50 border border-red-200 text-red-700 text-sm font-medium flex items-center gap-2">
-            <Info className="w-5 h-5 text-red-500 shrink-0" />
+          <div className="mb-6 p-3.5 rounded-2xl bg-red-50 border border-red-200 text-red-700 text-xs font-medium flex items-center gap-2">
+            <Info className="w-4 h-4 text-red-500 shrink-0" />
             <span>{errorMessage}</span>
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-8">
+        <form onSubmit={handleSubmit} className="space-y-7">
           
           {/* LANGKAH 1: PILIH LAYANAN */}
           <div className="space-y-3">
-            <div className="flex items-center justify-between">
-              <label className="text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center gap-2">
-                <span className="w-5 h-5 rounded-full bg-blue-600 text-white flex items-center justify-center text-[11px] font-black">1</span>
-                <span>Pilih Jenis Layanan:</span>
-              </label>
-              <span className="text-[11px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200">
-                Amanah • Cepat • Ramah
-              </span>
-            </div>
+            <label className="text-xs font-bold text-slate-900 uppercase tracking-wider flex items-center gap-2">
+              <span className="w-5 h-5 rounded-full bg-slate-900 text-white flex items-center justify-center text-[10px] font-black">1</span>
+              <span>Pilih Jenis Layanan:</span>
+            </label>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5">
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
               {MAS_SERVICES.map((srv) => {
                 const Icon = srv.icon;
                 const isSelected = serviceType === srv.type;
@@ -485,66 +478,61 @@ export const OrderForm: React.FC<OrderFormProps> = ({ onOrderCreated, onCancel, 
                     key={srv.type}
                     type="button"
                     onClick={() => setServiceType(srv.type)}
-                    className={`p-3.5 rounded-2xl border text-left transition flex items-start gap-3 relative cursor-pointer ${
+                    className={`p-3 rounded-2xl border text-left transition flex items-start gap-2.5 relative cursor-pointer ${
                       isSelected
-                        ? 'border-blue-600 bg-blue-50/80 ring-2 ring-blue-600/20 shadow-xs'
-                        : 'border-slate-200 bg-white hover:bg-slate-50 text-slate-600'
+                        ? 'border-orange-500 bg-orange-50/70 text-slate-900 ring-1 ring-orange-500/30'
+                        : 'border-slate-200 bg-white hover:bg-slate-50 text-slate-700'
                     }`}
                   >
                     <div
-                      className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 font-bold ${
+                      className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 font-bold ${
                         isSelected
-                          ? 'bg-blue-600 text-white'
+                          ? 'bg-orange-600 text-white'
                           : 'bg-slate-100 text-slate-500'
                       }`}
                     >
-                      <Icon className="w-5 h-5" />
+                      <Icon className="w-4 h-4" />
                     </div>
-                    <div className="min-w-0 pr-4">
-                      <div className={`text-xs font-bold truncate ${isSelected ? 'text-blue-900' : 'text-slate-800'}`}>
+                    <div className="min-w-0 pr-2">
+                      <div className={`text-xs font-bold truncate ${isSelected ? 'text-orange-900' : 'text-slate-800'}`}>
                         {srv.label}
                       </div>
-                      <div className="text-[10.5px] text-slate-500 line-clamp-2 mt-0.5 leading-snug">
+                      <div className="text-[10px] text-slate-500 line-clamp-1 mt-0.5 leading-snug">
                         {srv.desc}
                       </div>
                     </div>
-                    {isSelected && (
-                      <div className="absolute top-3 right-3 text-blue-600">
-                        <CheckCircle2 className="w-4 h-4 fill-blue-600 text-white" />
-                      </div>
-                    )}
                   </button>
                 );
               })}
             </div>
           </div>
 
-          {/* LANGKAH 2: LOKASI PENJEMPUTAN & PENGANTARAN */}
-          <div className="space-y-4 pt-2 border-t border-slate-100">
+          {/* LANGKAH 2: LOKASI PENJEMPUTAN & PENGANTARAN (Grab/Gojek Route Visualizer) */}
+          <div className="space-y-4 pt-4 border-t border-slate-100">
             <div className="flex items-center justify-between">
-              <label className="text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center gap-2">
-                <span className="w-5 h-5 rounded-full bg-blue-600 text-white flex items-center justify-center text-[11px] font-black">2</span>
-                <span>Tentukan Lokasi Penjemputan &amp; Pengantaran:</span>
+              <label className="text-xs font-bold text-slate-900 uppercase tracking-wider flex items-center gap-2">
+                <span className="w-5 h-5 rounded-full bg-slate-900 text-white flex items-center justify-center text-[10px] font-black">2</span>
+                <span>Titik Penjemputan &amp; Pengantaran:</span>
               </label>
               
               <button
                 type="button"
                 onClick={() => setShowMap(!showMap)}
-                className="text-xs font-bold text-blue-600 hover:text-blue-700 bg-blue-50 hover:bg-blue-100 px-3 py-1 rounded-xl transition flex items-center gap-1.5 border border-blue-200/80 cursor-pointer"
+                className="text-xs font-bold text-slate-700 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 px-3 py-1 rounded-xl transition flex items-center gap-1.5 cursor-pointer"
               >
-                <Map className="w-3.5 h-3.5" />
-                <span>{showMap ? 'Tutup Peta' : 'Buka Peta Interaktif'}</span>
+                <Map className="w-3.5 h-3.5 text-slate-500" />
+                <span>{showMap ? 'Tutup Peta' : 'Peta Interaktif'}</span>
               </button>
             </div>
 
-            {/* Titik Jemput / Toko */}
-            <div className="space-y-2">
+            {/* Titik Jemput (Warung / Toko) */}
+            <div className="space-y-1.5">
               <div className="flex items-center justify-between text-xs font-semibold text-slate-700">
-                <span className="flex items-center gap-1.5 text-blue-700">
-                  <MapPin className="w-4 h-4 text-blue-600" />
-                  <span>Titik Penjemputan / Toko / Warung:</span>
+                <span className="flex items-center gap-1.5 text-slate-800">
+                  <span className="w-2.5 h-2.5 rounded-full bg-blue-600 inline-block"></span>
+                  <span>Lokasi Jemput / Toko / Warung:</span>
                 </span>
-                <span className="text-[11px] text-slate-400">Tempat rider mengambil barang</span>
+                <span className="text-[10.5px] text-slate-400">Tempat rider ambil barang</span>
               </div>
 
               <div className="relative">
@@ -553,7 +541,7 @@ export const OrderForm: React.FC<OrderFormProps> = ({ onOrderCreated, onCancel, 
                   value={pickupAddress}
                   onChange={(e) => handlePickupInputChange(e.target.value)}
                   placeholder="Ketik nama toko, warung, pasar, atau ketik 'Metro'..."
-                  className="w-full text-xs sm:text-sm p-3.5 pl-10 rounded-2xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white shadow-2xs font-medium"
+                  className="w-full text-xs sm:text-sm p-3.5 pl-10 rounded-2xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 bg-white shadow-2xs font-medium"
                 />
                 <MapPin className="w-4 h-4 text-blue-600 absolute left-3.5 top-4" />
                 {isSearchingPickup && (
@@ -571,7 +559,7 @@ export const OrderForm: React.FC<OrderFormProps> = ({ onOrderCreated, onCancel, 
                           setPickupCoords([sug.lat, sug.lng]);
                           setPickupSuggestions([]);
                         }}
-                        className="w-full text-left p-2.5 px-3.5 hover:bg-blue-50 text-xs border-b border-slate-100 flex items-center gap-2 cursor-pointer"
+                        className="w-full text-left p-2.5 px-3.5 hover:bg-orange-50 text-xs border-b border-slate-100 flex items-center gap-2 cursor-pointer"
                       >
                         <MapPin className="w-3.5 h-3.5 text-blue-500 shrink-0" />
                         <span className="truncate">{sug.displayName}</span>
@@ -582,14 +570,14 @@ export const OrderForm: React.FC<OrderFormProps> = ({ onOrderCreated, onCancel, 
               </div>
 
               {/* Quick Pickup Presets Chips */}
-              <div className="flex items-center gap-1.5 flex-wrap pt-1">
-                <span className="text-[10.5px] font-bold text-slate-400">Pilihan Cepat:</span>
+              <div className="flex items-center gap-1.5 flex-wrap pt-0.5">
+                <span className="text-[10px] font-bold text-slate-400">Pilihan Cepat:</span>
                 {QUICK_PICKUP_SPOTS.map((s, idx) => (
                   <button
                     key={idx}
                     type="button"
                     onClick={() => handleSelectPickupPreset(s)}
-                    className="text-[10px] font-semibold px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-blue-600 hover:text-white text-slate-700 transition border border-slate-200/80 cursor-pointer"
+                    className="text-[10.5px] font-semibold px-2 py-0.5 rounded-md bg-slate-100 hover:bg-slate-900 hover:text-white text-slate-700 transition border border-slate-200 cursor-pointer"
                   >
                     {s.name}
                   </button>
@@ -602,22 +590,22 @@ export const OrderForm: React.FC<OrderFormProps> = ({ onOrderCreated, onCancel, 
               <button
                 type="button"
                 onClick={handleSwapPoints}
-                className="p-2 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 transition border border-slate-300 shadow-2xs flex items-center gap-1 text-[11px] font-bold px-3 cursor-pointer"
+                className="p-1.5 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 transition border border-slate-200 shadow-2xs flex items-center gap-1 text-[10.5px] font-bold px-2.5 cursor-pointer"
                 title="Tukar Posisi Jemput & Antar"
               >
-                <ArrowLeftRight className="w-3.5 h-3.5" />
+                <ArrowLeftRight className="w-3 h-3" />
                 <span>Tukar Titik</span>
               </button>
             </div>
 
             {/* Titik Antar / Rumah Pemesan */}
-            <div className="space-y-2">
+            <div className="space-y-1.5">
               <div className="flex items-center justify-between text-xs font-semibold text-slate-700">
-                <span className="flex items-center gap-1.5 text-orange-700">
-                  <MapPin className="w-4 h-4 text-orange-600" />
-                  <span>Titik Pengantaran / Alamat Anda:</span>
+                <span className="flex items-center gap-1.5 text-slate-800">
+                  <span className="w-2.5 h-2.5 rounded-full bg-orange-600 inline-block"></span>
+                  <span>Lokasi Antar / Alamat Rumah Anda:</span>
                 </span>
-                <span className="text-[11px] text-slate-400">Tempat pesanan diantarkan</span>
+                <span className="text-[10.5px] text-slate-400">Tempat pesanan diantarkan</span>
               </div>
 
               <div className="relative">
@@ -625,8 +613,8 @@ export const OrderForm: React.FC<OrderFormProps> = ({ onOrderCreated, onCancel, 
                   type="text"
                   value={destAddress}
                   onChange={(e) => handleDestInputChange(e.target.value)}
-                  placeholder="Ketik desa Anda, nama jalan, patokan rumah..."
-                  className="w-full text-xs sm:text-sm p-3.5 pl-10 rounded-2xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white shadow-2xs font-medium"
+                  placeholder="Ketik desa Anda, nama dusun, patokan rumah..."
+                  className="w-full text-xs sm:text-sm p-3.5 pl-10 rounded-2xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 bg-white shadow-2xs font-medium"
                 />
                 <MapPin className="w-4 h-4 text-orange-600 absolute left-3.5 top-4" />
                 {isSearchingDest && (
@@ -655,14 +643,14 @@ export const OrderForm: React.FC<OrderFormProps> = ({ onOrderCreated, onCancel, 
               </div>
 
               {/* Quick Destination Villages Chips */}
-              <div className="flex items-center gap-1.5 flex-wrap pt-1">
-                <span className="text-[10.5px] font-bold text-slate-400">Desa Purbolinggo:</span>
+              <div className="flex items-center gap-1.5 flex-wrap pt-0.5">
+                <span className="text-[10px] font-bold text-slate-400">Desa Purbolinggo:</span>
                 {QUICK_DEST_VILLAGES.map((v, idx) => (
                   <button
                     key={idx}
                     type="button"
                     onClick={() => handleSelectDestVillage(v)}
-                    className="text-[10px] font-semibold px-2.5 py-1 rounded-lg bg-orange-50 hover:bg-orange-600 hover:text-white text-orange-800 transition border border-orange-200/80 cursor-pointer"
+                    className="text-[10.5px] font-semibold px-2 py-0.5 rounded-md bg-orange-50 hover:bg-orange-600 hover:text-white text-orange-800 transition border border-orange-200 cursor-pointer"
                   >
                     {v.name}
                   </button>
@@ -670,34 +658,34 @@ export const OrderForm: React.FC<OrderFormProps> = ({ onOrderCreated, onCancel, 
               </div>
             </div>
 
-            {/* Optional Map Picker Drawer */}
+            {/* Optional Map Drawer */}
             {showMap && (
               <div className="pt-2 animate-in fade-in duration-200">
                 <div className="p-3 bg-slate-50 border border-slate-200 rounded-2xl space-y-2">
                   <div className="flex items-center justify-between text-xs font-bold text-slate-700">
-                    <span>Pilih Titik Langsung di Peta:</span>
+                    <span>Titik Koordinat di Peta:</span>
                     <div className="flex items-center gap-2">
                       <button
                         type="button"
                         onClick={() => setActiveSelectMode('pickup')}
-                        className={`px-2.5 py-1 rounded-lg text-[10px] font-bold transition cursor-pointer ${
+                        className={`px-2.5 py-1 rounded-lg text-[10.5px] font-bold transition cursor-pointer ${
                           activeSelectMode === 'pickup'
                             ? 'bg-blue-600 text-white'
                             : 'bg-white border text-slate-700'
                         }`}
                       >
-                        Klik Jemput (Biru)
+                        Pilih Jemput
                       </button>
                       <button
                         type="button"
                         onClick={() => setActiveSelectMode('destination')}
-                        className={`px-2.5 py-1 rounded-lg text-[10px] font-bold transition cursor-pointer ${
+                        className={`px-2.5 py-1 rounded-lg text-[10.5px] font-bold transition cursor-pointer ${
                           activeSelectMode === 'destination'
                             ? 'bg-orange-600 text-white'
                             : 'bg-white border text-slate-700'
                         }`}
                       >
-                        Klik Antar (Merah)
+                        Pilih Antar
                       </button>
                     </div>
                   </div>
@@ -720,16 +708,16 @@ export const OrderForm: React.FC<OrderFormProps> = ({ onOrderCreated, onCancel, 
             )}
 
             {/* Distance & Route Summary Badge */}
-            <div className="p-3.5 bg-blue-50/70 border border-blue-200/80 rounded-2xl flex items-center justify-between text-xs text-blue-900">
+            <div className="p-3 bg-slate-50 border border-slate-200/90 rounded-2xl flex items-center justify-between text-xs text-slate-800">
               <div className="flex items-center gap-2">
-                <Route className="w-4 h-4 text-blue-600 shrink-0" />
-                <span className="font-semibold">
-                  Jarak Rute Jalan: <strong className="text-blue-950 font-black">{effectiveDistance} KM</strong>
+                <Route className="w-4 h-4 text-orange-600 shrink-0" />
+                <span>
+                  Jarak Jalan Riil: <strong className="font-extrabold text-slate-900">{effectiveDistance} KM</strong>
                 </span>
-                <span className="text-blue-400">•</span>
-                <span className="text-blue-700">± {routeData.durationMinutes} Menit</span>
+                <span className="text-slate-300">•</span>
+                <span className="text-slate-600">± {routeData.durationMinutes} Menit</span>
               </div>
-              <span className="text-[10.5px] font-bold text-emerald-700 bg-emerald-100/80 px-2 py-0.5 rounded-md">
+              <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200">
                 Rute Optimal
               </span>
             </div>
@@ -737,14 +725,11 @@ export const OrderForm: React.FC<OrderFormProps> = ({ onOrderCreated, onCancel, 
           </div>
 
           {/* LANGKAH 3: RINCIAN PESANAN & ESTIMASI HARGA BARANG */}
-          <div className="space-y-4 pt-2 border-t border-slate-100">
-            <div className="flex items-center justify-between">
-              <label className="text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center gap-2">
-                <span className="w-5 h-5 rounded-full bg-blue-600 text-white flex items-center justify-center text-[11px] font-black">3</span>
-                <span>Rincian Barang / Pesanan:</span>
-              </label>
-              <span className="text-[11px] text-slate-400">Jelaskan sejelas mungkin</span>
-            </div>
+          <div className="space-y-4 pt-4 border-t border-slate-100">
+            <label className="text-xs font-bold text-slate-900 uppercase tracking-wider flex items-center gap-2">
+              <span className="w-5 h-5 rounded-full bg-slate-900 text-white flex items-center justify-center text-[10px] font-black">3</span>
+              <span>Rincian Barang / Titipan:</span>
+            </label>
 
             <div className="space-y-2">
               <textarea
@@ -752,18 +737,18 @@ export const OrderForm: React.FC<OrderFormProps> = ({ onOrderCreated, onCancel, 
                 value={requestDetail}
                 onChange={(e) => setRequestDetail(e.target.value)}
                 placeholder={getDetailPlaceholder()}
-                className="w-full text-xs sm:text-sm p-3.5 rounded-2xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white shadow-2xs font-medium resize-none leading-relaxed"
+                className="w-full text-xs sm:text-sm p-3.5 rounded-2xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 bg-white shadow-2xs font-medium resize-none leading-relaxed"
               />
             </div>
 
             {isShoppingType && (
-              <div className="p-4 bg-orange-50/70 border border-orange-200 rounded-2xl space-y-2">
+              <div className="p-4 bg-slate-50 border border-slate-200 rounded-2xl space-y-2">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold text-orange-900 flex items-center gap-1.5">
+                  <span className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
                     <ShoppingBag className="w-4 h-4 text-orange-600" />
                     <span>Perkiraan Uang Belanjaan (Ditalangi Kurir Dulu):</span>
                   </span>
-                  <span className="text-xs font-black text-orange-700 font-heading">
+                  <span className="text-xs font-extrabold text-orange-600 font-heading">
                     {formatRupiah(goodsPrice)}
                   </span>
                 </div>
@@ -773,11 +758,11 @@ export const OrderForm: React.FC<OrderFormProps> = ({ onOrderCreated, onCancel, 
                   step={5000}
                   value={goodsPrice || ''}
                   onChange={(e) => setGoodsPrice(Number(e.target.value) || 0)}
-                  placeholder="Masukkan perkiraan harga barang (Rp)"
-                  className="w-full text-xs sm:text-sm p-3 rounded-xl border border-orange-200 bg-white focus:outline-none focus:ring-2 focus:ring-orange-500 font-bold"
+                  placeholder="Masukkan perkiraan harga belanjaan (Rp)"
+                  className="w-full text-xs sm:text-sm p-3 rounded-xl border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 font-bold"
                 />
-                <p className="text-[10.5px] text-orange-700">
-                  * Uang belanjaan ditalangi rider MAS JASTIP terlebih dahulu. Anda membayar total belanjaan + ongkir sesuai nota struk asli saat barang tiba.
+                <p className="text-[10.5px] text-slate-500 leading-snug">
+                  * Uang belanjaan ditalangi rider terlebih dahulu. Anda membayar total belanjaan + ongkir sesuai nota struk asli saat barang tiba.
                 </p>
               </div>
             )}
@@ -790,22 +775,19 @@ export const OrderForm: React.FC<OrderFormProps> = ({ onOrderCreated, onCancel, 
                 type="text"
                 value={note}
                 onChange={(e) => setNote(e.target.value)}
-                placeholder="Contoh: Rumah cat hijau samping masjid, panggil 'Budi', uang pas disiapkan."
-                className="w-full text-xs sm:text-sm p-3 rounded-2xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white shadow-2xs"
+                placeholder="Contoh: Rumah cat hijau dekat masjid, uang pas disiapkan."
+                className="w-full text-xs sm:text-sm p-3 rounded-2xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 bg-white shadow-2xs"
               />
             </div>
 
           </div>
 
-          {/* LANGKAH 4: DATA PEMESAN & PEMBAYARAN */}
-          <div className="space-y-4 pt-2 border-t border-slate-100">
-            <div className="flex items-center justify-between">
-              <label className="text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center gap-2">
-                <span className="w-5 h-5 rounded-full bg-blue-600 text-white flex items-center justify-center text-[11px] font-black">4</span>
-                <span>Data Pemesan &amp; Metode Pembayaran:</span>
-              </label>
-              <span className="text-[11px] text-slate-400">Untuk koordinasi kurir</span>
-            </div>
+          {/* LANGKAH 4: DATA PEMESAN & METODE PEMBAYARAN */}
+          <div className="space-y-4 pt-4 border-t border-slate-100">
+            <label className="text-xs font-bold text-slate-900 uppercase tracking-wider flex items-center gap-2">
+              <span className="w-5 h-5 rounded-full bg-slate-900 text-white flex items-center justify-center text-[10px] font-black">4</span>
+              <span>Data Pemesan &amp; Pembayaran:</span>
+            </label>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
@@ -818,7 +800,7 @@ export const OrderForm: React.FC<OrderFormProps> = ({ onOrderCreated, onCancel, 
                     value={customerName}
                     onChange={(e) => setCustomerName(e.target.value)}
                     placeholder="Contoh: Budi Santoso"
-                    className="w-full text-xs sm:text-sm p-3.5 pl-10 rounded-2xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white shadow-2xs font-medium"
+                    className="w-full text-xs sm:text-sm p-3.5 pl-10 rounded-2xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 bg-white shadow-2xs font-medium"
                   />
                   <User className="w-4 h-4 text-slate-400 absolute left-3.5 top-4" />
                 </div>
@@ -826,7 +808,7 @@ export const OrderForm: React.FC<OrderFormProps> = ({ onOrderCreated, onCancel, 
 
               <div>
                 <label className="text-xs font-semibold text-slate-700 mb-1 block">
-                  Nomor WhatsApp (Aktif):
+                  Nomor WhatsApp:
                 </label>
                 <div className="relative">
                   <input
@@ -834,16 +816,17 @@ export const OrderForm: React.FC<OrderFormProps> = ({ onOrderCreated, onCancel, 
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
                     placeholder="Contoh: 081234567890"
-                    className="w-full text-xs sm:text-sm p-3.5 pl-10 rounded-2xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white shadow-2xs font-medium"
+                    className="w-full text-xs sm:text-sm p-3.5 pl-10 rounded-2xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 bg-white shadow-2xs font-medium"
                   />
-                  <Phone className="w-4 h-4 text-emerald-500 absolute left-3.5 top-4" />
+                  <Phone className="w-4 h-4 text-emerald-600 absolute left-3.5 top-4" />
                 </div>
               </div>
             </div>
 
+            {/* Metode Pembayaran */}
             <div className="space-y-1.5">
               <label className="text-xs font-semibold text-slate-700 block">
-                Pilih Metode Pembayaran:
+                Metode Pembayaran:
               </label>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                 <button
@@ -851,12 +834,12 @@ export const OrderForm: React.FC<OrderFormProps> = ({ onOrderCreated, onCancel, 
                   onClick={() => setPaymentMethod('cod')}
                   className={`p-3 rounded-2xl border text-left transition flex items-center gap-3 cursor-pointer ${
                     paymentMethod === 'cod'
-                      ? 'border-emerald-600 bg-emerald-50/80 ring-2 ring-emerald-600/20'
+                      ? 'border-emerald-600 bg-emerald-50/70 ring-1 ring-emerald-600/30'
                       : 'border-slate-200 bg-white hover:bg-slate-50'
                   }`}
                 >
-                  <div className={`w-9 h-9 rounded-xl flex items-center justify-center font-bold ${paymentMethod === 'cod' ? 'bg-emerald-600 text-white' : 'bg-slate-100 text-slate-500'}`}>
-                    <Banknote className="w-5 h-5" />
+                  <div className={`w-8 h-8 rounded-xl flex items-center justify-center font-bold ${paymentMethod === 'cod' ? 'bg-emerald-600 text-white' : 'bg-slate-100 text-slate-500'}`}>
+                    <Banknote className="w-4 h-4" />
                   </div>
                   <div>
                     <div className="text-xs font-bold text-slate-900">COD (Bayar Tunai di Rumah)</div>
@@ -869,16 +852,16 @@ export const OrderForm: React.FC<OrderFormProps> = ({ onOrderCreated, onCancel, 
                   onClick={() => setPaymentMethod('transfer')}
                   className={`p-3 rounded-2xl border text-left transition flex items-center gap-3 cursor-pointer ${
                     paymentMethod === 'transfer'
-                      ? 'border-blue-600 bg-blue-50/80 ring-2 ring-blue-600/20'
+                      ? 'border-orange-500 bg-orange-50/70 ring-1 ring-orange-500/30'
                       : 'border-slate-200 bg-white hover:bg-slate-50'
                   }`}
                 >
-                  <div className={`w-9 h-9 rounded-xl flex items-center justify-center font-bold ${paymentMethod === 'transfer' ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-500'}`}>
-                    <CreditCard className="w-5 h-5" />
+                  <div className={`w-8 h-8 rounded-xl flex items-center justify-center font-bold ${paymentMethod === 'transfer' ? 'bg-orange-600 text-white' : 'bg-slate-100 text-slate-500'}`}>
+                    <CreditCard className="w-4 h-4" />
                   </div>
                   <div>
                     <div className="text-xs font-bold text-slate-900">Transfer Bank / QRIS</div>
-                    <div className="text-[10.5px] text-slate-500">Scan QRIS kurir / transfer langsung</div>
+                    <div className="text-[10.5px] text-slate-500">Scan QRIS kurir atau transfer langsung</div>
                   </div>
                 </button>
               </div>
@@ -886,49 +869,49 @@ export const OrderForm: React.FC<OrderFormProps> = ({ onOrderCreated, onCancel, 
 
           </div>
 
-          {/* RINGKASAN BIAYA TRANSPARAN */}
-          <div className="bg-slate-900 text-white rounded-3xl p-5 sm:p-6 shadow-xl space-y-4">
+          {/* RINGKASAN BIAYA (Grab/Tokopedia Clean Receipt Style) */}
+          <div className="bg-slate-900 text-white rounded-3xl p-5 sm:p-6 shadow-md space-y-3.5">
             <div className="flex items-center justify-between pb-3 border-b border-slate-800">
               <div className="flex items-center gap-2">
-                <Receipt className="w-5 h-5 text-amber-400" />
-                <h3 className="font-bold text-sm font-heading">Ringkasan Biaya Transparan</h3>
+                <Receipt className="w-4 h-4 text-orange-400" />
+                <h3 className="font-bold text-sm font-heading">Rincian Biaya Transparan</h3>
               </div>
-              <span className="text-[10.5px] font-bold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">
-                Resmi Tanpa Mark-up
+              <span className="text-[10px] font-bold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">
+                Pasti &amp; Resmi
               </span>
             </div>
 
             <div className="space-y-2 text-xs text-slate-300">
               <div className="flex justify-between">
-                <span>Tarif Dasar Layanan:</span>
-                <span className="font-semibold text-white">
+                <span>Tarif Dasar Jastip:</span>
+                <span className="font-medium text-white">
                   {formatRupiah(isShoppingType ? tariffConfig.jasaTitipBase : tariffConfig.jasaSuruhBase)}
                 </span>
               </div>
 
               <div className="flex justify-between">
                 <span>Tarif Jarak ({effectiveDistance} KM):</span>
-                <span className="font-semibold text-white">
+                <span className="font-medium text-white">
                   {formatRupiah(fareResult.serviceFee - (isShoppingType ? tariffConfig.jasaTitipBase : tariffConfig.jasaSuruhBase))}
                 </span>
               </div>
 
               {isShoppingType && goodsPrice > 0 && (
-                <div className="flex justify-between text-amber-300">
-                  <span>Estimasi Uang Belanjaan (Talangan):</span>
+                <div className="flex justify-between text-orange-300">
+                  <span>Estimasi Belanjaan (Ditalangi Dulu):</span>
                   <span className="font-bold">{formatRupiah(goodsPrice)}</span>
                 </div>
               )}
 
               <div className="pt-3 border-t border-slate-800 flex items-center justify-between text-base">
                 <div>
-                  <div className="font-black text-white font-heading">TOTAL PERKIRAAN</div>
+                  <div className="font-black text-white font-heading">TOTAL ESTIMASI</div>
                   <div className="text-[10px] text-slate-400">
-                    Dibayar saat barang tiba ({paymentMethod === 'cod' ? 'COD' : 'QRIS / Transfer'})
+                    Dibayar saat tiba ({paymentMethod === 'cod' ? 'COD Tunai' : 'QRIS/Transfer'})
                   </div>
                 </div>
                 <div className="text-right">
-                  <div className="text-xl sm:text-2xl font-black text-amber-400 font-heading">
+                  <div className="text-xl sm:text-2xl font-black text-orange-400 font-heading">
                     {formatRupiah(fareResult.totalPrice)}
                   </div>
                   <div className="text-[10px] text-slate-400">
@@ -938,21 +921,21 @@ export const OrderForm: React.FC<OrderFormProps> = ({ onOrderCreated, onCancel, 
               </div>
             </div>
 
-            {/* DUAL SUBMISSION BUTTONS */}
+            {/* ACTION BUTTONS */}
             <div className="pt-2 flex flex-col sm:flex-row gap-2.5">
               
               <button
                 type="submit"
-                className="flex-1 bg-gradient-to-r from-orange-500 via-amber-500 to-orange-600 hover:brightness-110 active:scale-95 text-white font-black py-3.5 px-5 rounded-2xl transition text-xs sm:text-sm flex items-center justify-center gap-2 shadow-lg shadow-orange-500/25 cursor-pointer"
+                className="flex-1 bg-orange-600 hover:bg-orange-700 active:scale-95 text-white font-bold py-3.5 px-5 rounded-2xl transition text-xs sm:text-sm flex items-center justify-center gap-2 shadow-sm shadow-orange-600/30 cursor-pointer"
               >
                 <Check className="w-4 h-4" />
-                <span>Pesan Sekarang (Lacak di Web)</span>
+                <span>Pesan Sekarang (Lacak Realtime)</span>
               </button>
 
               <button
                 type="button"
                 onClick={handleOrderViaWhatsApp}
-                className="sm:w-auto bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white font-black py-3.5 px-5 rounded-2xl transition text-xs sm:text-sm flex items-center justify-center gap-2 shadow-md shadow-emerald-600/25 cursor-pointer"
+                className="sm:w-auto bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white font-bold py-3.5 px-5 rounded-2xl transition text-xs sm:text-sm flex items-center justify-center gap-2 shadow-sm shadow-emerald-600/30 cursor-pointer"
                 title="Kirim detail pesanan otomatis ke nomor WhatsApp MAS JASTIP"
               >
                 <MessageCircle className="w-4 h-4" />
