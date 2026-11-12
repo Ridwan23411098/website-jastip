@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { Navbar } from './components/Navbar';
 import { HeroSection } from './components/HeroSection';
 import { OrderForm } from './components/OrderForm';
@@ -14,20 +14,32 @@ import {
   getCurrentRole,
   setCurrentRole,
   subscribeToStore,
-  getOrders
 } from './services/storageService';
 import { getCurrentUser, AuthUser } from './services/authService';
-import { UserRole, Order } from './types';
-import { Shield, Bike, User, ArrowLeft, ArrowRight, PlusCircle, CheckCircle, Phone } from 'lucide-react';
+import { UserRole, Order, ServiceType } from './types';
+import {
+  Shield,
+  Bike,
+  User,
+  ArrowRight,
+  PlusCircle,
+  Phone,
+  Home,
+  Search,
+  History,
+  Info,
+  Clock,
+  Sparkles
+} from 'lucide-react';
 
 export const App: React.FC = () => {
-  // Navigation tab state: 'home' | 'order' | 'tracking' | 'howItWorks' | 'history' | 'admin' | 'courier'
+  // Navigation tab state
   const [currentTab, setCurrentTab] = useState<'home' | 'order' | 'tracking' | 'howItWorks' | 'history' | 'admin' | 'courier'>('home');
 
-  // Role state: 'customer' | 'admin' | 'courier'
+  // Role state
   const [currentRole, setRole] = useState<UserRole>(getCurrentRole());
 
-  // Logged in user state
+  // Logged in user
   const [currentUser, setCurrentUser] = useState<AuthUser | null>(getCurrentUser());
 
   // Login Modal
@@ -38,6 +50,9 @@ export const App: React.FC = () => {
 
   // Tracking target code
   const [activeTrackingCode, setActiveTrackingCode] = useState<string>('MJ-2026-001');
+
+  // Selected service type when clicked from Hero
+  const [selectedServiceType, setSelectedServiceType] = useState<ServiceType | undefined>(undefined);
 
   useEffect(() => {
     return subscribeToStore(() => {
@@ -86,70 +101,78 @@ export const App: React.FC = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
+  const handleStartOrder = (serviceType?: ServiceType) => {
+    setSelectedServiceType(serviceType);
+    setCurrentTab('order');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-800 flex flex-col font-sans">
+    <div className="min-h-screen bg-slate-50 text-slate-800 flex flex-col font-sans selection:bg-orange-500 selection:text-white">
       
-      {/* Role Navigation Top Switcher Banner */}
-      <div className="bg-slate-900 text-slate-300 text-xs py-2 px-4 border-b border-slate-800 flex flex-wrap items-center justify-between gap-2">
-        <div className="flex items-center gap-2">
-          <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></span>
-          <span>Akses Cepat Mode:</span>
-          <div className="inline-flex rounded-lg bg-slate-800 p-0.5 border border-slate-700">
+      {/* Top Professional Announcement Bar with Discreet Testing Mode */}
+      <div className="bg-gradient-to-r from-slate-900 via-blue-950 to-slate-900 text-slate-300 text-[11px] sm:text-xs py-1.5 px-3.5 sm:px-6 border-b border-slate-800 flex items-center justify-between gap-3 overflow-x-auto no-scrollbar">
+        
+        {/* Left: Live Status & Hours */}
+        <div className="flex items-center gap-2 shrink-0">
+          <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+          <span className="font-semibold text-white">Buka 10.00 - 21.00 WIB</span>
+          <span className="text-slate-500 hidden sm:inline">•</span>
+          <span className="text-slate-300 hidden sm:inline">Melayani Seluruh Purbolinggo &amp; Rute Kota Metro</span>
+        </div>
+
+        {/* Center / Right: Hotline & Subtle Role Mode Switcher */}
+        <div className="flex items-center gap-3 shrink-0">
+          <a
+            href="https://wa.me/6285789528805?text=Halo%20MAS%20JASTIP%20Purbolinggo%2C%20saya%20mau%20order%20jasa"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-amber-300 hover:text-amber-200 transition font-bold flex items-center gap-1"
+          >
+            <Phone className="w-3 h-3 text-emerald-400" />
+            <span>WA: 0857-8952-8805</span>
+          </a>
+
+          <span className="text-slate-600 hidden md:inline">|</span>
+
+          {/* Discreet Testing Switcher for User, Admin, Courier */}
+          <div className="hidden md:flex items-center gap-1 bg-slate-800/80 rounded-lg p-0.5 border border-slate-700/80">
             <button
               onClick={() => handleRoleSelect('customer')}
-              className={`px-3 py-1 rounded-md text-xs font-bold transition flex items-center gap-1.5 ${
+              className={`px-2 py-0.5 rounded-md text-[10px] font-bold transition flex items-center gap-1 ${
                 currentRole === 'customer'
-                  ? 'bg-blue-600 text-white shadow-xs'
+                  ? 'bg-blue-600 text-white'
                   : 'text-slate-400 hover:text-white'
               }`}
             >
-              <User className="w-3.5 h-3.5" />
+              <User className="w-3 h-3" />
               <span>Pelanggan</span>
             </button>
-
-            <button
-              onClick={() => handleRoleSelect('admin')}
-              className={`px-3 py-1 rounded-md text-xs font-bold transition flex items-center gap-1.5 ${
-                currentRole === 'admin'
-                  ? 'bg-purple-600 text-white shadow-xs'
-                  : 'text-slate-400 hover:text-white'
-              }`}
-            >
-              <Shield className="w-3.5 h-3.5" />
-              <span>Admin</span>
-            </button>
-
             <button
               onClick={() => handleRoleSelect('courier')}
-              className={`px-3 py-1 rounded-md text-xs font-bold transition flex items-center gap-1.5 ${
+              className={`px-2 py-0.5 rounded-md text-[10px] font-bold transition flex items-center gap-1 ${
                 currentRole === 'courier'
-                  ? 'bg-emerald-600 text-white shadow-xs'
+                  ? 'bg-emerald-600 text-white'
                   : 'text-slate-400 hover:text-white'
               }`}
             >
-              <Bike className="w-3.5 h-3.5" />
+              <Bike className="w-3 h-3" />
               <span>Kurir</span>
+            </button>
+            <button
+              onClick={() => handleRoleSelect('admin')}
+              className={`px-2 py-0.5 rounded-md text-[10px] font-bold transition flex items-center gap-1 ${
+                currentRole === 'admin'
+                  ? 'bg-purple-600 text-white'
+                  : 'text-slate-400 hover:text-white'
+              }`}
+            >
+              <Shield className="w-3 h-3" />
+              <span>Admin</span>
             </button>
           </div>
         </div>
 
-        <div className="flex items-center gap-3">
-          {currentUser && (
-            <span className="text-[11px] text-slate-400 hidden sm:inline">
-              Login: <strong className="text-white">{currentUser.name}</strong> ({currentUser.email})
-            </span>
-          )}
-
-          {currentRole !== 'customer' && (
-            <button
-              onClick={() => handleRoleSelect('customer')}
-              className="text-xs text-blue-400 hover:underline flex items-center gap-1 font-semibold"
-            >
-              <ArrowLeft className="w-3.5 h-3.5" />
-              <span>Kembali ke Beranda Pelanggan</span>
-            </button>
-          )}
-        </div>
       </div>
 
       {/* Main Navbar */}
@@ -165,7 +188,7 @@ export const App: React.FC = () => {
       />
 
       {/* Main Content Area */}
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+      <main className="flex-1 max-w-7xl w-full mx-auto px-3.5 sm:px-6 lg:px-8 py-5 sm:py-8 pb-24 sm:pb-16">
         
         {/* VIEW: ADMIN DASHBOARD */}
         {currentTab === 'admin' && (
@@ -181,37 +204,41 @@ export const App: React.FC = () => {
         {currentTab === 'home' && (
           <div className="space-y-12">
             <HeroSection
-              onStartOrder={() => {
-                setCurrentTab('order');
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-              }}
+              onStartOrder={handleStartOrder}
               onOpenTracking={() => {
                 setCurrentTab('tracking');
                 window.scrollTo({ top: 0, behavior: 'smooth' });
               }}
             />
 
-            {/* Quick Live Tracking Preview */}
-            <div className="bg-white border border-slate-200/90 rounded-3xl p-6 sm:p-8 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
-              <div>
-                <h3 className="font-bold text-slate-900 text-lg font-heading">
+            {/* Quick Live Tracking Search Callout */}
+            <div className="bg-white border border-slate-200/90 rounded-3xl p-6 sm:p-8 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-5">
+              <div className="space-y-1">
+                <div className="inline-flex items-center gap-1.5 text-xs font-bold text-blue-600 bg-blue-50 px-2.5 py-0.5 rounded-full border border-blue-200">
+                  <Search className="w-3.5 h-3.5" />
+                  <span>Pelacakan Realtime</span>
+                </div>
+                <h3 className="font-extrabold text-slate-900 text-lg sm:text-xl font-heading">
                   Sudah Memiliki Nomor Pesanan?
                 </h3>
-                <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
-                  Lacak posisi perjalanan kurir dan perkiraan tiba langsung di Google Maps / OpenStreetMap.
+                <p className="text-xs sm:text-sm text-slate-500 max-w-xl leading-relaxed">
+                  Pantau posisi perjalanan kurir dan perkiraan tiba langsung di peta interaktif secara transparan.
                 </p>
               </div>
 
-              <button
-                onClick={() => {
-                  setCurrentTab('tracking');
-                  window.scrollTo({ top: 0, behavior: 'smooth' });
-                }}
-                className="bg-blue-50 hover:bg-blue-100 text-blue-700 font-bold px-5 py-3 rounded-xl transition text-xs sm:text-sm flex items-center justify-center gap-2 border border-blue-200"
-              >
-                <span>Buka Pelacakan Pesanan</span>
-                <ArrowRight className="w-4 h-4" />
-              </button>
+              <div className="flex items-center gap-3 shrink-0">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setCurrentTab('tracking');
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                  }}
+                  className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white font-bold px-6 py-3 rounded-2xl transition text-xs sm:text-sm flex items-center justify-center gap-2 shadow-md shadow-blue-600/20 active:scale-95 cursor-pointer"
+                >
+                  <span>Buka Pelacakan Pesanan</span>
+                  <ArrowRight className="w-4 h-4" />
+                </button>
+              </div>
             </div>
           </div>
         )}
@@ -220,6 +247,7 @@ export const App: React.FC = () => {
         {currentTab === 'order' && (
           <OrderForm
             onOrderCreated={handleOrderCreated}
+            initialServiceType={selectedServiceType}
             onCancel={() => {
               setCurrentTab('home');
               window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -286,32 +314,85 @@ export const App: React.FC = () => {
         onLoginSuccess={handleLoginSuccess}
       />
 
-      {/* Persistent Floating Contact Buttons: WhatsApp & TikTok */}
-      <div className="fixed bottom-5 right-5 z-40 flex flex-col items-end gap-2.5">
-        {/* TikTok Floating Button */}
-        <a
-          href="https://www.tiktok.com/@masjastippurbolinggo01"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="flex items-center gap-2 bg-slate-900/90 hover:bg-black text-white px-3.5 py-2 rounded-full shadow-lg backdrop-blur-md border border-slate-700/60 transition-all hover:scale-105 active:scale-95 text-xs font-bold group"
-          title="Buka TikTok Resmi MAS JASTIP PURBOLINGGO 01"
+      {/* Mobile App-Style Bottom Navigation Bar (Thumbs Friendly) */}
+      <nav className="fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-slate-200/90 py-1.5 px-3 flex items-center justify-around lg:hidden shadow-xl">
+        <button
+          type="button"
+          onClick={() => {
+            setCurrentTab('home');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+          }}
+          className={`flex flex-col items-center gap-0.5 p-1 rounded-xl transition ${
+            currentTab === 'home' ? 'text-blue-600 font-bold' : 'text-slate-500 hover:text-slate-800'
+          }`}
         >
-          <svg className="w-4 h-4 fill-current text-white group-hover:scale-110 transition-transform" viewBox="0 0 24 24">
-            <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64c.29 0 .58.04.86.12V9.4a6.33 6.33 0 0 0-.86-.06A6.34 6.34 0 0 0 3.1 15.68a6.34 6.34 0 0 0 10.82 4.49 6.27 6.27 0 0 0 1.87-4.49V8.62a8.28 8.28 0 0 0 4.8 1.52V6.69z"/>
-          </svg>
-          <span className="hidden sm:inline">TikTok</span>
-        </a>
+          <Home className="w-5 h-5" />
+          <span className="text-[10px]">Beranda</span>
+        </button>
 
-        {/* WhatsApp Floating Button */}
+        <button
+          type="button"
+          onClick={() => {
+            setCurrentTab('tracking');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+          }}
+          className={`flex flex-col items-center gap-0.5 p-1 rounded-xl transition ${
+            currentTab === 'tracking' ? 'text-blue-600 font-bold' : 'text-slate-500 hover:text-slate-800'
+          }`}
+        >
+          <Search className="w-5 h-5" />
+          <span className="text-[10px]">Lacak</span>
+        </button>
+
+        {/* Center Primary Action: Pesan */}
+        <button
+          type="button"
+          onClick={() => {
+            setCurrentTab('order');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+          }}
+          className="relative -top-3.5 bg-gradient-to-r from-orange-500 via-amber-500 to-orange-600 text-white p-3.5 rounded-full shadow-lg shadow-orange-500/35 active:scale-95 transition-transform flex flex-col items-center"
+        >
+          <PlusCircle className="w-6 h-6" />
+          <span className="sr-only">Pesan</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => {
+            setCurrentTab('history');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+          }}
+          className={`flex flex-col items-center gap-0.5 p-1 rounded-xl transition ${
+            currentTab === 'history' ? 'text-blue-600 font-bold' : 'text-slate-500 hover:text-slate-800'
+          }`}
+        >
+          <History className="w-5 h-5" />
+          <span className="text-[10px]">Riwayat</span>
+        </button>
+
         <a
-          href="https://wa.me/6281369767697?text=Halo%20MAS%20JASTIP%20Purbolinggo%2C%20saya%20mau%20order%20jasa"
+          href="https://wa.me/6285789528805?text=Halo%20MAS%20JASTIP%20Purbolinggo%2C%20saya%20mau%20order%20jasa"
           target="_blank"
           rel="noopener noreferrer"
-          className="flex items-center gap-2 bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-3 rounded-full shadow-xl shadow-emerald-500/30 transition-all hover:scale-105 active:scale-95 text-xs font-black group"
-          title="Chat WhatsApp MAS JASTIP (0813-6976-7697)"
+          className="flex flex-col items-center gap-0.5 p-1 rounded-xl text-emerald-600 hover:text-emerald-700 transition"
+        >
+          <Phone className="w-5 h-5" />
+          <span className="text-[10px] font-bold">CS WA</span>
+        </a>
+      </nav>
+
+      {/* Persistent Floating WhatsApp Button for Desktop Screens */}
+      <div className="hidden lg:flex fixed bottom-6 right-6 z-40 flex-col items-end gap-2.5">
+        <a
+          href="https://wa.me/6285789528805?text=Halo%20MAS%20JASTIP%20Purbolinggo%2C%20saya%20mau%20order%20jasa"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-center gap-2.5 bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-3 rounded-full shadow-xl shadow-emerald-500/30 transition-all hover:scale-105 active:scale-95 text-xs font-black group cursor-pointer"
+          title="Chat WhatsApp MAS JASTIP (0857-8952-8805)"
         >
           <Phone className="w-4 h-4 fill-current group-hover:rotate-12 transition-transform" />
-          <span>WhatsApp MAS JASTIP</span>
+          <span>Chat WhatsApp Rider</span>
         </a>
       </div>
 

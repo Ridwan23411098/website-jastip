@@ -153,16 +153,16 @@ export const CourierDashboard: React.FC = () => {
       <div className="bg-white border border-slate-200/90 rounded-3xl p-6 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-center gap-3.5">
           <img
-            src="/mas-jastip-logo.png"
+            src="/jsp-logo.png"
             alt="Logo Profil MAS JASTIP - purbolinggo -"
             className="w-12 h-12 rounded-full object-cover ring-2 ring-orange-500/50 shadow-md shrink-0"
           />
           <div>
             <div className="flex items-center gap-2 flex-wrap">
               <h1 className="text-xl font-black text-slate-900 font-heading">
-                Aplikasi Rider MAS JASTIP
+                Aplikasi Rider JSP KURIR
               </h1>
-              <span className="text-[10px] bg-blue-600 text-white font-black px-2 py-0.5 rounded-full shadow-2xs tracking-wider">
+              <span className="text-[10px] bg-gradient-to-r from-orange-500 to-amber-500 text-white font-black px-2 py-0.5 rounded-full shadow-2xs tracking-wider">
                 - purbolinggo -
               </span>
             </div>

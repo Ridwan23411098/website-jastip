@@ -134,15 +134,15 @@ export const AdminDashboard: React.FC = () => {
       <div className="bg-white border border-slate-200/90 rounded-3xl p-6 sm:p-8 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="flex items-center gap-4">
           <img
-            src="/mas-jastip-logo.png"
+            src="/jsp-logo.png"
             alt="Logo Profil MAS JASTIP - purbolinggo -"
             className="w-14 h-14 rounded-full object-cover ring-2 ring-orange-500/50 shadow-md shrink-0"
           />
           <div>
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 text-blue-700 text-xs font-bold mb-1.5">
-              <Shield className="w-4 h-4 text-blue-600" />
-              <span>Panel Kendali Admin MAS JASTIP</span>
-              <span className="text-[10px] bg-blue-600 text-white font-black px-2 py-0.2 rounded-full">- purbolinggo -</span>
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-orange-50 text-orange-700 text-xs font-bold mb-1.5 border border-orange-200">
+              <Shield className="w-4 h-4 text-orange-600" />
+              <span>Panel Kendali Admin JSP KURIR</span>
+              <span className="text-[10px] bg-gradient-to-r from-orange-500 to-amber-500 text-white font-black px-2 py-0.2 rounded-full">- purbolinggo -</span>
             </div>
             <h1 className="text-2xl sm:text-3xl font-black text-slate-900 font-heading">
               Dashboard Manajemen Layanan

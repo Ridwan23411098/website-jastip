@@ -1,28 +1,31 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import {
-  Bike,
   Menu,
   X,
-  Search,
+  Bike,
   PlusCircle,
-  HelpCircle,
-  Clock,
-  User,
+  Search,
+  History,
+  Info,
   Shield,
+  User,
   LogIn,
   LogOut,
-  ChevronDown,
-  Phone
+  Phone,
+  Sparkles,
+  Home,
+  CheckCircle2,
+  Clock
 } from 'lucide-react';
 import { UserRole } from '../types';
-import { getCurrentUser, logoutUser, AuthUser } from '../services/authService';
+import { getCurrentUser } from '../services/authService';
 
 interface NavbarProps {
   currentTab: 'home' | 'order' | 'tracking' | 'howItWorks' | 'history' | 'admin' | 'courier';
   onNavigate: (tab: 'home' | 'order' | 'tracking' | 'howItWorks' | 'history' | 'admin' | 'courier') => void;
   currentRole: UserRole;
   onOpenLogin: () => void;
-  onLogout?: () => void;
+  onLogout: () => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -40,103 +43,98 @@ export const Navbar: React.FC<NavbarProps> = ({
     setMobileMenuOpen(false);
   };
 
-  const handleLogoutClick = () => {
-    logoutUser();
-    if (onLogout) onLogout();
-    handleNav('home');
-  };
+  const navLinks: { tab: 'home' | 'order' | 'tracking' | 'howItWorks' | 'history'; label: string; icon: any }[] = [
+    { tab: 'home', label: 'Beranda', icon: Home },
+    { tab: 'order', label: 'Pesan Jastip', icon: PlusCircle },
+    { tab: 'tracking', label: 'Lacak Pesanan', icon: Search },
+    { tab: 'howItWorks', label: 'Cara Kerja', icon: Info },
+    { tab: 'history', label: 'Riwayat', icon: History },
+  ];
 
   return (
-    <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-200 shadow-xs">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16 sm:h-20">
+    <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-200/90 shadow-xs transition-all">
+      <div className="max-w-7xl mx-auto px-3.5 sm:px-6 lg:px-8">
+        <div className="flex items-center justify-between h-16 sm:h-20 gap-3">
           
-          {/* Logo & Profile Identity */}
+          {/* Logo & Brand Identity */}
           <div
             onClick={() => handleNav('home')}
-            className="flex items-center gap-2.5 sm:gap-3 cursor-pointer group"
+            className="flex items-center gap-3 cursor-pointer select-none group shrink-0"
           >
-            <div className="relative shrink-0">
+            <div className="relative">
               <img
                 src="/mas-jastip-logo.png"
-                alt="Logo Profil MAS JASTIP - purbolinggo -"
-                className="w-10 h-10 sm:w-12 sm:h-12 rounded-full object-cover shadow-md shadow-orange-500/25 ring-2 ring-orange-500/50 group-hover:scale-105 transition-transform"
+                alt="Logo Resmi MAS JASTIP Purbolinggo"
+                className="w-11 h-11 sm:w-13 sm:h-13 rounded-2xl object-cover ring-2 ring-orange-500/80 shadow-md group-hover:scale-105 transition-transform bg-white"
+                onError={(e) => {
+                  // Fallback to jsp-logo if needed
+                  const target = e.target as HTMLImageElement;
+                  if (!target.src.includes('jsp-logo.png')) {
+                    target.src = '/jsp-logo.png';
+                  }
+                }}
               />
-              <span className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-emerald-500 border-2 border-white rounded-full"></span>
+              <span className="absolute -bottom-1 -right-1 w-3.5 h-3.5 bg-emerald-500 border-2 border-white rounded-full" title="Rider Siap Antar"></span>
             </div>
-            <div>
+
+            <div className="min-w-0">
               <div className="flex items-center gap-1.5 flex-wrap">
-                <span className="font-extrabold text-lg sm:text-2xl tracking-tight text-slate-900 font-heading">
-                  MAS <span className="text-blue-600">JASTIP</span>
+                <span className="font-black text-lg sm:text-xl text-slate-900 tracking-tight font-heading leading-tight group-hover:text-blue-600 transition-colors">
+                  MAS <span className="text-orange-600">JASTIP</span>
                 </span>
-                <span className="text-[10px] sm:text-[11px] font-black px-2 py-0.5 rounded-full bg-blue-600 text-white shadow-2xs tracking-wider">
-                  - purbolinggo -
+                <span className="text-[10px] sm:text-[11px] font-black px-2 py-0.5 rounded-full bg-gradient-to-r from-orange-500 to-amber-500 text-white shadow-2xs tracking-wide">
+                  Purbolinggo
                 </span>
               </div>
-              <p className="text-[11px] text-slate-500 font-medium hidden xs:block">
-                Mudahnya serahin ke MAS JASTIP • 10.00 - 21.00 WIB
+              <p className="text-[11px] sm:text-xs text-slate-500 font-medium truncate flex items-center gap-1.5 mt-0.5">
+                <span className="hidden xs:inline">Jasa Titip &amp; Suruh Cepat</span>
+                <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-600 bg-emerald-50 px-1.5 py-0.2 rounded border border-emerald-200">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping"></span>
+                  Buka 10-21 WIB
+                </span>
               </p>
             </div>
           </div>
 
-          {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center gap-1 lg:gap-2 text-sm font-semibold text-slate-600">
-            <button
-              onClick={() => handleNav('home')}
-              className={`px-3 py-2 rounded-xl transition ${
-                currentTab === 'home'
-                  ? 'text-blue-600 bg-blue-50/70 font-bold'
-                  : 'hover:text-blue-600 hover:bg-slate-50'
-              }`}
-            >
-              Beranda
-            </button>
-            <button
-              onClick={() => handleNav('order')}
-              className={`px-3 py-2 rounded-xl transition ${
-                currentTab === 'order'
-                  ? 'text-blue-600 bg-blue-50/70 font-bold'
-                  : 'hover:text-blue-600 hover:bg-slate-50'
-              }`}
-            >
-              Pesan
-            </button>
-            <button
-              onClick={() => handleNav('tracking')}
-              className={`px-3 py-2 rounded-xl transition ${
-                currentTab === 'tracking'
-                  ? 'text-blue-600 bg-blue-50/70 font-bold'
-                  : 'hover:text-blue-600 hover:bg-slate-50'
-              }`}
-            >
-              Lacak Pesanan
-            </button>
-            <button
-              onClick={() => handleNav('howItWorks')}
-              className={`px-3 py-2 rounded-xl transition ${
-                currentTab === 'howItWorks'
-                  ? 'text-blue-600 bg-blue-50/70 font-bold'
-                  : 'hover:text-blue-600 hover:bg-slate-50'
-              }`}
-            >
-              Cara Kerja
-            </button>
-            <button
-              onClick={() => handleNav('history')}
-              className={`px-3 py-2 rounded-xl transition ${
-                currentTab === 'history'
-                  ? 'text-blue-600 bg-blue-50/70 font-bold'
-                  : 'hover:text-blue-600 hover:bg-slate-50'
-              }`}
-            >
-              Riwayat
-            </button>
+          {/* Desktop Nav Links */}
+          <nav className="hidden lg:flex items-center gap-1 text-xs sm:text-sm font-semibold text-slate-600">
+            {navLinks.map((item) => {
+              const Icon = item.icon;
+              const isActive = currentTab === item.tab;
+              return (
+                <button
+                  key={item.tab}
+                  type="button"
+                  onClick={() => handleNav(item.tab)}
+                  className={`px-3.5 py-2 rounded-xl transition flex items-center gap-1.5 ${
+                    isActive
+                      ? 'text-blue-600 bg-blue-50 font-bold shadow-2xs'
+                      : 'hover:text-blue-600 hover:bg-slate-50'
+                  }`}
+                >
+                  <Icon className={`w-4 h-4 ${isActive ? 'text-blue-600' : 'text-slate-400'}`} />
+                  <span>{item.label}</span>
+                </button>
+              );
+            })}
           </nav>
 
-          {/* Right Actions: Role / Profile & CTA */}
+          {/* Right Actions: Profile, Role Badge & CTA */}
           <div className="flex items-center gap-2 sm:gap-3">
             
-            {/* Quick Profile / Login Indicator */}
+            {/* Quick WhatsApp Support (Desktop) */}
+            <a
+              href="https://wa.me/6285789528805?text=Halo%20MAS%20JASTIP%20Purbolinggo%2C%20saya%20butuh%20bantuan"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hidden xl:flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1.5 rounded-xl text-slate-600 hover:text-emerald-600 hover:bg-emerald-50 transition border border-transparent hover:border-emerald-200"
+              title="Konsultasi CS WhatsApp"
+            >
+              <Phone className="w-3.5 h-3.5 text-emerald-600" />
+              <span>0857-8952-8805</span>
+            </a>
+
+            {/* Profile / Account Trigger */}
             {loggedInUser ? (
               <div className="flex items-center gap-1 bg-slate-50 border border-slate-200 rounded-xl p-1 pr-2">
                 <button
@@ -152,11 +150,11 @@ export const Navbar: React.FC<NavbarProps> = ({
                   ) : (
                     <User className="w-3.5 h-3.5 text-blue-600" />
                   )}
-                  <span className="font-bold truncate max-w-[90px] sm:max-w-[130px]">{loggedInUser.name}</span>
+                  <span className="font-bold truncate max-w-[70px] sm:max-w-[120px]">{loggedInUser.name}</span>
                 </button>
                 <button
                   type="button"
-                  onClick={handleLogoutClick}
+                  onClick={onLogout}
                   className="text-slate-400 hover:text-red-600 p-1 rounded-lg transition"
                   title="Keluar (Logout)"
                 >
@@ -167,77 +165,52 @@ export const Navbar: React.FC<NavbarProps> = ({
               <button
                 type="button"
                 onClick={onOpenLogin}
-                className="flex items-center gap-1.5 text-xs font-semibold px-3 py-2 rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700 transition"
-                title="Masuk / Daftar"
+                className="hidden sm:flex items-center gap-1.5 text-xs font-semibold px-3 py-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 transition shrink-0 shadow-2xs"
+                title="Masuk / Akun"
               >
                 <LogIn className="w-3.5 h-3.5 text-blue-600" />
                 <span>Masuk</span>
               </button>
             )}
 
-            {/* Direct shortcuts for Admin & Courier */}
+            {/* Dashboard Shortcut Buttons if logged in as Admin or Courier */}
             {currentRole === 'admin' && (
               <button
                 onClick={() => handleNav('admin')}
-                className="hidden sm:flex items-center gap-1 text-xs font-bold px-3 py-2 rounded-xl bg-purple-50 text-purple-700 border border-purple-200 hover:bg-purple-100 transition"
+                className="hidden sm:flex items-center gap-1 text-xs font-bold px-3 py-2 rounded-xl bg-purple-50 text-purple-700 border border-purple-200 hover:bg-purple-100 transition shrink-0"
               >
                 <Shield className="w-3.5 h-3.5" />
-                <span>Dashboard Admin</span>
+                <span>Admin</span>
               </button>
             )}
 
             {currentRole === 'courier' && (
               <button
                 onClick={() => handleNav('courier')}
-                className="hidden sm:flex items-center gap-1 text-xs font-bold px-3 py-2 rounded-xl bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100 transition"
+                className="hidden sm:flex items-center gap-1 text-xs font-bold px-3 py-2 rounded-xl bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100 transition shrink-0"
               >
                 <Bike className="w-3.5 h-3.5" />
-                <span>Dashboard Kurir</span>
+                <span>Kurir</span>
               </button>
             )}
 
-            {/* WhatsApp Contact */}
-            <a
-              href="https://wa.me/6281369767697?text=Halo%20MAS%20JASTIP%20Purbolinggo%2C%20saya%20mau%20order%20jasa"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="hidden lg:flex items-center gap-1.5 text-xs font-bold px-3 py-2 rounded-xl bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100 transition shadow-2xs hover:scale-105 active:scale-95"
-              title="Chat WhatsApp Resmi MAS JASTIP"
-            >
-              <Phone className="w-3.5 h-3.5 text-emerald-600" />
-              <span>0813-6976-7697</span>
-            </a>
-
-            {/* TikTok Link */}
-            <a
-              href="https://www.tiktok.com/@masjastippurbolinggo01"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="hidden xl:flex items-center gap-1.5 text-xs font-bold px-3 py-2 rounded-xl bg-slate-900 text-white hover:bg-black transition shadow-2xs hover:scale-105 active:scale-95"
-              title="Buka TikTok Resmi MAS JASTIP PURBOLINGGO 01"
-            >
-              <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24">
-                <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64c.29 0 .58.04.86.12V9.4a6.33 6.33 0 0 0-.86-.06A6.34 6.34 0 0 0 3.1 15.68a6.34 6.34 0 0 0 10.82 4.49 6.27 6.27 0 0 0 1.87-4.49V8.62a8.28 8.28 0 0 0 4.8 1.52V6.69z"/>
-              </svg>
-              <span>TikTok</span>
-            </a>
-
-            {/* Main CTA: Buat Pesanan */}
+            {/* Main Primary CTA: Buat Pesanan */}
             <button
               onClick={() => handleNav('order')}
-              className="bg-blue-600 hover:bg-blue-700 text-white font-bold px-4 sm:px-5 py-2.5 rounded-xl transition text-xs sm:text-sm flex items-center gap-2 shadow-md shadow-blue-600/20 active:scale-95"
+              className="bg-gradient-to-r from-orange-500 via-amber-500 to-orange-600 hover:brightness-105 active:scale-95 text-white font-extrabold px-3.5 sm:px-5 py-2 sm:py-2.5 rounded-xl transition text-xs sm:text-sm flex items-center gap-1.5 sm:gap-2 shadow-md shadow-orange-500/20 shrink-0"
             >
-              <PlusCircle className="w-4 h-4" />
-              <span>Buat Pesanan</span>
+              <PlusCircle className="w-4 h-4 text-white" />
+              <span className="hidden xs:inline">Pesan Sekarang</span>
+              <span className="xs:hidden">Pesan</span>
             </button>
 
             {/* Mobile menu toggle */}
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="md:hidden p-2 rounded-xl text-slate-600 hover:bg-slate-100"
-              aria-label="Toggle menu"
+              className="lg:hidden p-2 rounded-xl text-slate-600 hover:bg-slate-100 transition shrink-0"
+              aria-label="Menu"
             >
-              {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+              {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
             </button>
 
           </div>
@@ -247,74 +220,30 @@ export const Navbar: React.FC<NavbarProps> = ({
 
       {/* Mobile Drawer Menu */}
       {mobileMenuOpen && (
-        <div className="md:hidden border-t border-slate-200 bg-white px-4 pt-3 pb-5 space-y-2 text-sm font-semibold animate-in slide-in-from-top-2 duration-150 shadow-lg">
-          <button
-            onClick={() => handleNav('home')}
-            className={`w-full text-left p-2.5 rounded-xl flex items-center justify-between ${
-              currentTab === 'home' ? 'bg-blue-50 text-blue-700' : 'text-slate-700'
-            }`}
-          >
-            <span>Beranda</span>
-          </button>
-          <button
-            onClick={() => handleNav('order')}
-            className={`w-full text-left p-2.5 rounded-xl flex items-center justify-between ${
-              currentTab === 'order' ? 'bg-blue-50 text-blue-700' : 'text-slate-700'
-            }`}
-          >
-            <span>Pesan (Buat Pesanan)</span>
-          </button>
-          <button
-            onClick={() => handleNav('tracking')}
-            className={`w-full text-left p-2.5 rounded-xl flex items-center justify-between ${
-              currentTab === 'tracking' ? 'bg-blue-50 text-blue-700' : 'text-slate-700'
-            }`}
-          >
-            <span>Lacak Pesanan</span>
-          </button>
-          <button
-            onClick={() => handleNav('howItWorks')}
-            className={`w-full text-left p-2.5 rounded-xl flex items-center justify-between ${
-              currentTab === 'howItWorks' ? 'bg-blue-50 text-blue-700' : 'text-slate-700'
-            }`}
-          >
-            <span>Cara Kerja</span>
-          </button>
-          <button
-            onClick={() => handleNav('history')}
-            className={`w-full text-left p-2.5 rounded-xl flex items-center justify-between ${
-              currentTab === 'history' ? 'bg-blue-50 text-blue-700' : 'text-slate-700'
-            }`}
-          >
-            <span>Riwayat Pesanan</span>
-          </button>
-
-          <div className="pt-2 border-t border-slate-100 flex flex-col gap-2">
-            {/* Quick Contact WhatsApp & TikTok in Mobile Drawer */}
-            <div className="grid grid-cols-2 gap-2">
-              <a
-                href="https://wa.me/6281369767697?text=Halo%20MAS%20JASTIP%20Purbolinggo%2C%20saya%20mau%20order%20jasa"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="py-2.5 px-3 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-bold flex items-center justify-center gap-1.5 shadow-xs"
+        <div className="lg:hidden border-t border-slate-200 bg-white/98 backdrop-blur-md px-4 pt-3 pb-5 space-y-2 text-sm font-semibold animate-in slide-in-from-top-2 duration-150 shadow-xl">
+          {navLinks.map((item) => {
+            const Icon = item.icon;
+            const isActive = currentTab === item.tab;
+            return (
+              <button
+                key={item.tab}
+                type="button"
+                onClick={() => handleNav(item.tab)}
+                className={`w-full text-left p-3 rounded-xl flex items-center gap-3 transition ${
+                  isActive
+                    ? 'bg-blue-50 text-blue-700 font-bold border border-blue-200/60'
+                    : 'text-slate-700 hover:bg-slate-50'
+                }`}
               >
-                <Phone className="w-3.5 h-3.5" />
-                <span>WhatsApp</span>
-              </a>
+                <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${isActive ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-500'}`}>
+                  <Icon className="w-4 h-4" />
+                </div>
+                <span>{item.label}</span>
+              </button>
+            );
+          })}
 
-              <a
-                href="https://www.tiktok.com/@masjastippurbolinggo01"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="py-2.5 px-3 rounded-xl bg-slate-900 hover:bg-black text-white text-xs font-bold flex items-center justify-center gap-1.5 shadow-xs"
-              >
-                <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24">
-                  <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64c.29 0 .58.04.86.12V9.4a6.33 6.33 0 0 0-.86-.06A6.34 6.34 0 0 0 3.1 15.68a6.34 6.34 0 0 0 10.82 4.49 6.27 6.27 0 0 0 1.87-4.49V8.62a8.28 8.28 0 0 0 4.8 1.52V6.69z"/>
-                </svg>
-                <span>TikTok</span>
-              </a>
-            </div>
-
+          <div className="pt-3 border-t border-slate-100 flex flex-col gap-2">
             <button
               onClick={() => {
                 setMobileMenuOpen(false);
@@ -329,20 +258,33 @@ export const Navbar: React.FC<NavbarProps> = ({
             {currentRole === 'admin' && (
               <button
                 onClick={() => handleNav('admin')}
-                className="w-full py-2 px-3 rounded-xl bg-purple-600 text-white text-xs font-bold"
+                className="w-full py-2.5 px-3 rounded-xl bg-purple-600 text-white text-xs font-bold flex items-center justify-center gap-2"
               >
-                Buka Dashboard Admin
+                <Shield className="w-4 h-4" />
+                <span>Buka Dashboard Admin</span>
               </button>
             )}
 
             {currentRole === 'courier' && (
               <button
                 onClick={() => handleNav('courier')}
-                className="w-full py-2 px-3 rounded-xl bg-emerald-600 text-white text-xs font-bold"
+                className="w-full py-2.5 px-3 rounded-xl bg-emerald-600 text-white text-xs font-bold flex items-center justify-center gap-2"
               >
-                Buka Dashboard Kurir
+                <Bike className="w-4 h-4" />
+                <span>Buka Dashboard Kurir</span>
               </button>
             )}
+
+            {/* Direct WhatsApp CS */}
+            <a
+              href="https://wa.me/6285789528805?text=Halo%20MAS%20JASTIP%20Purbolinggo%2C%20saya%20mau%20konsultasi%20jasa"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="w-full py-2.5 px-3 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-black flex items-center justify-center gap-2 transition"
+            >
+              <Phone className="w-4 h-4" />
+              <span>Chat CS WhatsApp: 0857-8952-8805</span>
+            </a>
           </div>
         </div>
       )}

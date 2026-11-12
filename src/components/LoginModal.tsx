@@ -124,21 +124,21 @@ export const LoginModal: React.FC<LoginModalProps> = ({
         <div className="pb-4 border-b border-slate-100 mb-5">
           <div className="flex items-center gap-3 mb-2">
             <img
-              src="/mas-jastip-logo.png"
+              src="/jsp-logo.png"
               alt="Logo Profil MAS JASTIP - purbolinggo -"
               className="w-12 h-12 rounded-full object-cover ring-2 ring-orange-500/50 shadow-md shrink-0"
             />
             <div>
               <div className="flex items-center gap-1.5 flex-wrap">
                 <h3 className="text-xl sm:text-2xl font-black text-slate-900 font-heading">
-                  MAS JASTIP
+                  JSP KURIR
                 </h3>
-                <span className="text-[10px] font-black px-2 py-0.5 rounded-full bg-blue-600 text-white shadow-2xs">
+                <span className="text-[10px] font-black px-2 py-0.5 rounded-full bg-gradient-to-r from-orange-500 to-amber-500 text-white shadow-2xs">
                   - purbolinggo -
                 </span>
               </div>
               <p className="text-[11px] text-slate-500 font-medium">
-                Masuk ke akun pemesan, rider, atau admin
+                Masuk ke akun pemesan, kurir, atau admin
               </p>
             </div>
           </div>

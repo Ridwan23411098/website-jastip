@@ -108,3 +108,19 @@ export interface RouteCalculationResult {
   isRealRoad: boolean;
   summary?: string;
 }
+
+export type LandmarkCategory = 'purbolinggo' | 'metro' | 'lamteng' | 'lamtim' | 'bandarlampung';
+
+export interface LocationLandmark {
+  id: string;
+  name: string;
+  category: LandmarkCategory;
+  categoryLabel: string;
+  subCategory?: string;
+  address: string;
+  lat: number;
+  lng: number;
+  typicalKmFromPurbolinggo?: number;
+  aliases: string[];
+}
+

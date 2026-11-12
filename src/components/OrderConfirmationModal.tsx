@@ -45,8 +45,8 @@ export const OrderConfirmationModal: React.FC<OrderConfirmationModalProps> = ({
           <div className="flex items-center justify-center gap-3">
             <img
               src="/mas-jastip-logo.png"
-              alt="Logo MAS JASTIP - purbolinggo -"
-              className="w-14 h-14 rounded-full object-cover ring-2 ring-orange-500/50 shadow-md"
+              alt="Logo JSP KURIR - Jasa Suruh Purbolinggo"
+              className="w-14 h-14 rounded-full object-cover ring-2 ring-orange-500 shadow-md"
             />
             <div className="w-12 h-12 rounded-2xl bg-emerald-100 text-emerald-600 flex items-center justify-center shadow-xs">
               <CheckCircle2 className="w-7 h-7" />
@@ -56,7 +56,7 @@ export const OrderConfirmationModal: React.FC<OrderConfirmationModalProps> = ({
             Pesanan Berhasil Dibuat
           </h3>
           <p className="text-xs text-slate-500">
-            Pesanan Anda telah masuk ke sistem <strong>MAS JASTIP - purbolinggo -</strong> dan segera diproses rider.
+            Pesanan Anda telah masuk ke sistem <strong>JSP KURIR - JASA SURUH PURBOLINGGO</strong> dan segera diproses kurir.
           </p>
         </div>
 
@@ -160,8 +160,8 @@ export const OrderConfirmationModal: React.FC<OrderConfirmationModalProps> = ({
         <div className="pt-3 border-t border-slate-100 flex flex-col gap-2.5">
           {/* Direct WhatsApp Order Confirmation */}
           <a
-            href={`https://wa.me/6281369767697?text=${encodeURIComponent(
-              `Halo MAS JASTIP Purbolinggo! Saya baru saja membuat pesanan di website:\n\n` +
+            href={`https://wa.me/6285789528805?text=${encodeURIComponent(
+              `Halo JSP KURIR Purbolinggo! Saya baru saja membuat pesanan di website:\n\n` +
               `*No. Pesanan:* ${order.orderCode}\n` +
               `*Layanan:* ${order.serviceType}\n` +
               `*Pemesan:* ${order.customerName} (${order.phone})\n` +
@@ -174,10 +174,10 @@ export const OrderConfirmationModal: React.FC<OrderConfirmationModalProps> = ({
             target="_blank"
             rel="noopener noreferrer"
             className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 px-4 rounded-xl text-xs transition flex items-center justify-center gap-2 shadow-md shadow-emerald-600/20 hover:scale-101 active:scale-95"
-            title="Kirim Detail Pesanan ke WhatsApp MAS JASTIP"
+            title="Kirim Detail Pesanan ke WhatsApp JSP KURIR"
           >
             <Phone className="w-4 h-4" />
-            <span>Kirim Detail ke WhatsApp (0813-6976-7697)</span>
+            <span>Kirim Detail ke WhatsApp (0857-8952-8805)</span>
           </a>
 
           <div className="flex flex-col sm:flex-row gap-2.5">

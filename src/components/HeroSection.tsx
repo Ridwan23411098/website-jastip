@@ -1,278 +1,306 @@
-import React from 'react';
+﻿import React, { useState } from 'react';
 import {
-  MapPin,
-  Calculator,
-  Bike,
-  ArrowRight,
-  ShieldCheck,
-  CheckCircle2,
-  Clock,
-  Sparkles,
-  ShoppingBag,
-  Send,
-  Phone,
+  Utensils,
   Package,
   UserCheck,
   Heart,
+  Bike,
   ShoppingCart,
-  MoreHorizontal,
-  Utensils,
-  Check
+  Sparkles,
+  ArrowRight,
+  ShieldCheck,
+  Clock,
+  Phone,
+  Search,
+  Navigation,
+  CheckCircle2,
+  Calculator,
+  MapPin,
+  Route,
+  Zap,
+  Receipt
 } from 'lucide-react';
+import { ServiceType } from '../types';
+import { formatRupiah } from '../services/storageService';
 
 interface HeroSectionProps {
-  onStartOrder: () => void;
+  onStartOrder: (serviceType?: ServiceType) => void;
   onOpenTracking: () => void;
 }
+
+// 7 Layanan Resmi Sesuai Poster MAS JASTIP Purbolinggo
+const CORE_SERVICES: {
+  id: string;
+  type: ServiceType;
+  title: string;
+  desc: string;
+  tag: string;
+  icon: any;
+  color: string;
+  bgLight: string;
+}[] = [
+  {
+    id: 'food',
+    type: 'Pesanin Makanan/Minuman',
+    title: 'Pesan Makanan & Minuman',
+    desc: 'Titip beli kuliner resto, warung makan, pecel, bakso & jajanan pasar terdekat.',
+    tag: 'FAVORIT',
+    icon: Utensils,
+    color: 'text-orange-600',
+    bgLight: 'bg-orange-50 group-hover:bg-orange-600 group-hover:text-white',
+  },
+  {
+    id: 'package',
+    type: 'Ambil / Antar Barang',
+    title: 'Ambil & Antar Paket',
+    desc: 'Ambil paket ekspedisi (J&T, SiCepat, Shopee, JNE), berkas kantor, atau barang titipan.',
+    tag: 'PRAKTIS',
+    icon: Package,
+    color: 'text-blue-600',
+    bgLight: 'bg-blue-50 group-hover:bg-blue-600 group-hover:text-white',
+  },
+  {
+    id: 'shopping',
+    type: 'Order (Titip Belanja)',
+    title: 'Titip Belanja Pasar & Toko',
+    desc: 'Belanja sayur, sembako pasar, apotek, swalayan, atau belanja kebutuhan ke Kota Metro.',
+    tag: 'HEMAT WAKTU',
+    icon: ShoppingCart,
+    color: 'text-emerald-600',
+    bgLight: 'bg-emerald-50 group-hover:bg-emerald-600 group-hover:text-white',
+  },
+  {
+    id: 'ojek',
+    type: 'Jemput / Antar Orang',
+    title: 'Ojek Antar Jemput Warga',
+    desc: 'Ojek lokal terpercaya untuk antar jemput anak sekolah, puskesmas, pasar & balai desa.',
+    tag: 'AMANAH',
+    icon: UserCheck,
+    color: 'text-indigo-600',
+    bgLight: 'bg-indigo-50 group-hover:bg-indigo-600 group-hover:text-white',
+  },
+  {
+    id: 'pet',
+    type: 'Ambil / Antar Hewan Peliharaan',
+    title: 'Antar Jemput Hewan',
+    desc: 'Bawa hewan peliharaan (kucing/anjing) dengan aman ke petshop, grooming, atau dokter.',
+    tag: 'KHUSUS',
+    icon: Heart,
+    color: 'text-rose-600',
+    bgLight: 'bg-rose-50 group-hover:bg-rose-600 group-hover:text-white',
+  },
+  {
+    id: 'delivery',
+    type: 'Delivery',
+    title: 'Delivery Olshop & Toko',
+    desc: 'Pengantaran paket pesanan bagi pedagang online & UMKM se-Kecamatan Purbolinggo.',
+    tag: 'BISNIS LOKAL',
+    icon: Bike,
+    color: 'text-cyan-600',
+    bgLight: 'bg-cyan-50 group-hover:bg-cyan-600 group-hover:text-white',
+  },
+  {
+    id: 'metro',
+    type: 'Order (Titip Belanja)',
+    title: 'Rute Khusus Kota Metro',
+    desc: 'Titip belanja ke Chandra Superstore, PB Swalayan, Pasar Metro, atau RS Kota Metro.',
+    tag: 'RUTE METRO',
+    icon: Navigation,
+    color: 'text-amber-600',
+    bgLight: 'bg-amber-50 group-hover:bg-amber-600 group-hover:text-white',
+  },
+];
+
+// Quick Estimator Route Presets
+const ESTIMATOR_ROUTES = [
+  { label: 'Pasar Purbolinggo ➔ Desa Taman Endah', km: 3.4, fee: 12500, time: '10 mnt' },
+  { label: 'Chandra Superstore Metro ➔ Purbolinggo', km: 25.1, fee: 67500, time: '40 mnt' },
+  { label: 'PB Swalayan Metro ➔ Taman Fajar', km: 25.0, fee: 66500, time: '38 mnt' },
+  { label: 'Pasar Kotagajah ➔ Purbolinggo', km: 23.9, fee: 64000, time: '35 mnt' },
+  { label: 'Purbolinggo ➔ Pemkab Sukadana (Lamtim)', km: 25.9, fee: 69000, time: '40 mnt' },
+];
 
 export const HeroSection: React.FC<HeroSectionProps> = ({
   onStartOrder,
   onOpenTracking,
 }) => {
-  const serviceList = [
-    { title: 'Pesanin Makanan/Minuman', icon: Utensils, ready: true },
-    { title: 'Ambil Barang / Antar Barang', icon: Package, ready: true },
-    { title: 'Jemput / Antar Orang', icon: UserCheck, ready: true },
-    { title: 'Ambil / Antar Hewan Peliharaan', icon: Heart, ready: true },
-    { title: 'Delivery Olshop / Toko', icon: Bike, ready: true },
-    { title: 'Order (Titip Belanja)', icon: ShoppingCart, ready: true },
-    { title: 'Dan lain-lain', icon: Sparkles, ready: true },
-  ];
+  const [selectedRouteIdx, setSelectedRouteIdx] = useState(0);
+  const activeRoute = ESTIMATOR_ROUTES[selectedRouteIdx];
 
   return (
-    <div className="space-y-12 pb-8">
+    <div className="space-y-10 sm:space-y-14">
       
-      {/* Top Operating Banner */}
-      <div className="bg-gradient-to-r from-blue-600 via-blue-700 to-sky-600 rounded-3xl p-4 sm:p-5 text-white shadow-md flex flex-wrap items-center justify-between gap-3">
-        <div className="flex items-center gap-3">
-          <img
-            src="/mas-jastip-logo.png"
-            alt="Profil MAS JASTIP - purbolinggo -"
-            className="w-12 h-12 rounded-full object-cover ring-2 ring-orange-400 shadow-md shrink-0"
-          />
-          <div>
-            <div className="flex items-center gap-2 flex-wrap">
-              <span className="font-extrabold text-sm sm:text-base font-heading tracking-wide">
-                MAS JASTIP
-              </span>
-              <span className="px-2 py-0.5 rounded-full bg-blue-800/80 text-white text-[10px] font-black tracking-wider border border-white/20">
-                - purbolinggo -
-              </span>
-              <span className="px-2 py-0.5 rounded-full bg-emerald-400 text-slate-900 text-[10px] font-black uppercase">
-                Aktif
-              </span>
-            </div>
-            <p className="text-xs text-blue-100 mt-0.5">
-              &ldquo;Mudahnya serahin ke MAS JASTIP&rdquo; • Melayani Se-Kecamatan Purbolinggo &amp; Kota Metro
-            </p>
-          </div>
-        </div>
-
-        <div className="flex flex-wrap items-center gap-2 sm:gap-3 text-xs font-bold">
-          <div className="bg-white/15 backdrop-blur-xs px-3 py-1.5 rounded-xl flex items-center gap-1.5 border border-white/20">
-            <Clock className="w-3.5 h-3.5 text-amber-300" />
-            <span>10.00 - 21.00 WIB</span>
-          </div>
-
-          <a
-            href="https://wa.me/6281369767697?text=Halo%20MAS%20JASTIP%20Purbolinggo%2C%20saya%20mau%20order%20jasa"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="bg-emerald-500 hover:bg-emerald-600 text-white px-3.5 py-1.5 rounded-xl flex items-center gap-1.5 transition shadow-xs hover:scale-105 active:scale-95"
-            title="Buka WhatsApp Langsung"
-          >
-            <Phone className="w-3.5 h-3.5" />
-            <span>WhatsApp</span>
-          </a>
-
-          <a
-            href="https://www.tiktok.com/@masjastippurbolinggo01"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="bg-slate-900 hover:bg-black text-white px-3.5 py-1.5 rounded-xl flex items-center gap-1.5 transition shadow-xs border border-white/20 hover:scale-105 active:scale-95"
-            title="Buka Akun TikTok Resmi MAS JASTIP PURBOLINGGO 01"
-          >
-            <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24">
-              <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64c.29 0 .58.04.86.12V9.4a6.33 6.33 0 0 0-.86-.06A6.34 6.34 0 0 0 3.1 15.68a6.34 6.34 0 0 0 10.82 4.49 6.27 6.27 0 0 0 1.87-4.49V8.62a8.28 8.28 0 0 0 4.8 1.52V6.69z"/>
-            </svg>
-            <span>TikTok</span>
-          </a>
-        </div>
-      </div>
-
-      {/* Hero Main Content */}
-      <section className="relative overflow-hidden bg-white border border-slate-200/90 rounded-3xl p-6 sm:p-10 lg:p-12 shadow-xs">
+      {/* Top Main Hero Banner */}
+      <section className="relative overflow-hidden bg-gradient-to-br from-slate-900 via-blue-950 to-slate-900 text-white rounded-3xl p-5 sm:p-10 lg:p-12 shadow-xl border border-slate-800">
         
-        {/* Decorative blur */}
-        <div className="absolute top-0 right-0 w-96 h-96 bg-blue-100/50 rounded-full blur-3xl pointer-events-none -z-0"></div>
+        {/* Subtle Decorative Background Glow */}
+        <div className="absolute -top-24 -right-24 w-96 h-96 bg-blue-500/15 rounded-full blur-3xl pointer-events-none"></div>
+        <div className="absolute -bottom-24 -left-24 w-96 h-96 bg-orange-500/15 rounded-full blur-3xl pointer-events-none"></div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center relative z-10">
+        <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 items-center">
           
-          {/* Left Column: Heading, Value Props & Actions */}
-          <div className="lg:col-span-7 space-y-6 text-left">
+          {/* Left Hero Content */}
+          <div className="lg:col-span-7 space-y-5 sm:space-y-6 text-center lg:text-left">
             
-            {/* Official Brand Profile Badge */}
-            <div className="flex items-center gap-3.5 p-3 sm:p-3.5 rounded-2xl bg-gradient-to-r from-orange-50/90 via-amber-50/70 to-blue-50/60 border border-orange-200/90 shadow-2xs max-w-lg">
-              <img
-                src="/mas-jastip-logo.png"
-                alt="MAS JASTIP - purbolinggo -"
-                className="w-14 h-14 sm:w-16 sm:h-16 rounded-full object-cover shadow-md ring-4 ring-orange-500/30 shrink-0"
-              />
-              <div className="min-w-0">
-                <div className="flex items-center gap-2 flex-wrap">
-                  <span className="font-black text-lg sm:text-xl text-slate-900 tracking-tight font-heading">
-                    MAS <span className="text-blue-600">JASTIP</span>
-                  </span>
-                  <span className="text-[11px] font-black px-2.5 py-0.5 rounded-full bg-blue-600 text-white shadow-2xs tracking-wider">
-                    - purbolinggo -
-                  </span>
-                </div>
-                <p className="text-xs font-semibold text-slate-700 mt-0.5">
-                  &ldquo;Mudahnya serahin ke MAS JASTIP&rdquo;
-                </p>
-                <div className="flex items-center gap-2 text-[10px] text-slate-500 font-bold mt-1.5 flex-wrap">
-                  <a
-                    href="https://wa.me/6281369767697?text=Halo%20MAS%20JASTIP%20Purbolinggo%2C%20saya%20mau%20order%20jasa"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-emerald-500 text-white font-bold hover:bg-emerald-600 transition shadow-2xs hover:scale-105 active:scale-95"
-                    title="Buka WhatsApp Langsung"
-                  >
-                    <Phone className="w-3 h-3" />
-                    <span>WhatsApp</span>
-                  </a>
-
-                  <a
-                    href="https://www.tiktok.com/@masjastippurbolinggo01"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-slate-900 text-white font-bold hover:bg-black transition shadow-2xs hover:scale-105 active:scale-95"
-                    title="Buka TikTok Langsung"
-                  >
-                    <svg className="w-3 h-3 fill-current" viewBox="0 0 24 24">
-                      <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64c.29 0 .58.04.86.12V9.4a6.33 6.33 0 0 0-.86-.06A6.34 6.34 0 0 0 3.1 15.68a6.34 6.34 0 0 0 10.82 4.49 6.27 6.27 0 0 0 1.87-4.49V8.62a8.28 8.28 0 0 0 4.8 1.52V6.69z"/>
-                    </svg>
-                    <span>TikTok</span>
-                  </a>
-
-                  <span className="text-slate-400 font-normal">|</span>
-                  <span className="text-emerald-700 font-extrabold">● Buka 10.00 - 21.00</span>
-                </div>
-              </div>
+            {/* Live Operational Badge */}
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-slate-800/90 border border-slate-700/80 text-xs shadow-inner">
+              <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping"></span>
+              <span className="font-bold text-slate-200">Rider Standby</span>
+              <span className="text-slate-400">•</span>
+              <span className="text-amber-400 font-semibold">10.00 - 21.00 WIB</span>
+              <span className="hidden sm:inline text-slate-400">•</span>
+              <span className="hidden sm:inline text-slate-300 font-medium">Purbolinggo, Lampung Timur</span>
             </div>
 
             {/* Main Headline */}
-            <h1 className="text-3xl sm:text-5xl lg:text-6xl font-black text-slate-900 tracking-tight leading-tight font-heading">
-              Jasa Titip &amp; Suruh{' '}
-              <span className="text-blue-600 block sm:inline">Purbolinggo</span>
+            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight leading-tight sm:leading-tight font-heading">
+              Pesan Apapun Jadi Mudah,{' '}
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-400 via-amber-300 to-yellow-400">
+                Serahkan Semua ke MAS JASTIP!
+              </span>
             </h1>
 
-            {/* Description */}
-            <p className="text-sm sm:text-base text-slate-600 font-normal leading-relaxed">
-              Solusi praktis semua kebutuhan warga se-Kecamatan Purbolinggo (Taman Endah, Taman Fajar, Toto Harjo, dll) &amp; rute belanja ke Kota Metro. Ongkir dihitung otomatis per KM jalan raya sebenarnya.
+            {/* Value Proposition Description */}
+            <p className="text-sm sm:text-base text-slate-300 max-w-2xl mx-auto lg:mx-0 leading-relaxed">
+              Jasa titip beli makanan, belanja pasar &amp; swalayan, ambil paket ekspedisi, hingga ojek &amp; titip belanja ke <strong>Kota Metro</strong>. 
+              Ongkos transparan dihitung per KM rute jalan raya sebenarnya, amanah, dan bayar saat barang tiba (COD / Transfer).
             </p>
 
-            {/* 3 Values from Poster */}
-            <div className="grid grid-cols-3 gap-2 py-2 max-w-md">
-              <div className="p-3 bg-blue-50/70 border border-blue-100 rounded-2xl text-center">
-                <span className="text-lg block">🛡️</span>
-                <span className="text-xs font-bold text-blue-900">AMANAH</span>
-              </div>
-              <div className="p-3 bg-blue-50/70 border border-blue-100 rounded-2xl text-center">
-                <span className="text-lg block">⚡</span>
-                <span className="text-xs font-bold text-blue-900">CEPAT</span>
-              </div>
-              <div className="p-3 bg-blue-50/70 border border-blue-100 rounded-2xl text-center">
-                <span className="text-lg block">😊</span>
-                <span className="text-xs font-bold text-blue-900">RAMAH</span>
-              </div>
-            </div>
-
-            {/* Action Buttons */}
-            <div className="flex flex-col sm:flex-row items-center gap-3 pt-1">
+            {/* Hero Action Buttons */}
+            <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-3 pt-2">
               <button
-                onClick={onStartOrder}
-                className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white font-bold px-8 py-3.5 rounded-2xl transition text-sm sm:text-base flex items-center justify-center gap-2 shadow-lg shadow-blue-600/25 active:scale-95"
+                type="button"
+                onClick={() => onStartOrder()}
+                className="w-full sm:w-auto bg-gradient-to-r from-orange-500 via-amber-500 to-orange-600 hover:brightness-110 active:scale-95 text-white font-black px-6 py-3.5 rounded-2xl transition shadow-lg shadow-orange-500/25 flex items-center justify-center gap-2 text-sm sm:text-base cursor-pointer"
               >
-                <span>Pesan Sekarang</span>
+                <span>Mulai Buat Pesanan</span>
                 <ArrowRight className="w-5 h-5" />
               </button>
 
               <button
+                type="button"
                 onClick={onOpenTracking}
-                className="w-full sm:w-auto bg-white hover:bg-slate-50 text-slate-700 font-bold px-6 py-3.5 rounded-2xl border border-slate-200 transition text-sm sm:text-base flex items-center justify-center gap-2 shadow-xs"
+                className="w-full sm:w-auto bg-slate-800/90 hover:bg-slate-700/90 text-white font-bold px-5 py-3.5 rounded-2xl transition border border-slate-700 flex items-center justify-center gap-2 text-sm cursor-pointer"
               >
-                <Bike className="w-5 h-5 text-blue-600" />
+                <Search className="w-4 h-4 text-blue-400" />
                 <span>Lacak Pesanan Saya</span>
               </button>
+
+              <a
+                href="https://wa.me/6285789528805?text=Halo%20MAS%20JASTIP%20Purbolinggo%2C%20saya%20mau%20order%20jasa"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full sm:w-auto bg-emerald-600/90 hover:bg-emerald-600 text-white font-bold px-4 py-3.5 rounded-2xl transition flex items-center justify-center gap-2 text-sm border border-emerald-500/40"
+                title="Chat WhatsApp Resmi"
+              >
+                <Phone className="w-4 h-4" />
+                <span className="sm:hidden lg:inline">CS: 0857-8952-8805</span>
+                <span className="hidden sm:inline lg:hidden">WhatsApp</span>
+              </a>
             </div>
 
-            {/* Ongkir note */}
-            <div className="pt-2 text-xs font-bold text-slate-500 flex items-center gap-2">
-              <span className="px-2 py-0.5 rounded-md bg-sky-100 text-sky-800 border border-sky-200 text-[11px]">
-                ONGKIR
-              </span>
-              <span>TERGANTUNG JARAK (KM) • Transparan tanpa markup</span>
+            {/* Quick Guarantees Strip */}
+            <div className="pt-3 flex flex-wrap items-center justify-center lg:justify-start gap-4 sm:gap-6 text-xs text-slate-300 font-medium">
+              <div className="flex items-center gap-1.5">
+                <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+                <span>Tanpa Ribet Antre</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <Receipt className="w-4 h-4 text-blue-400 shrink-0" />
+                <span>Struk / Nota Asli Toko</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <ShieldCheck className="w-4 h-4 text-amber-400 shrink-0" />
+                <span>Amanah 100%</span>
+              </div>
             </div>
 
           </div>
 
-          {/* Right Column: Poster Resmi MAS JASTIP Purbolinggo */}
-          <div className="lg:col-span-5 flex flex-col items-center justify-center">
-            <div className="relative rounded-3xl overflow-hidden shadow-xl border border-slate-200/90 bg-white max-w-sm w-full group transition-all duration-300 hover:shadow-2xl hover:shadow-blue-600/10">
-              {/* Perfectly cropped poster image (no black bars, no obstructions) */}
-              <img
-                src="/mas-jastip-poster.jpg"
-                alt="Poster Resmi MAS JASTIP Purbolinggo"
-                className="w-full h-auto block object-cover rounded-t-3xl"
-              />
+          {/* Right Hero: Quick Ongkir Estimator Widget (Very Engaging & Helpful) */}
+          <div className="lg:col-span-5">
+            <div className="bg-slate-800/80 backdrop-blur-md border border-slate-700/80 rounded-2xl p-5 sm:p-6 shadow-2xl space-y-4">
               
-              {/* Bottom Information & Contact Bar */}
-              <div className="p-3.5 sm:p-4 bg-white border-t border-slate-100 flex items-center justify-between gap-3">
-                <div className="flex items-center gap-2.5 min-w-0">
-                  <img
-                    src="/mas-jastip-logo.png"
-                    alt="Logo Profil MAS JASTIP"
-                    className="w-10 h-10 rounded-full object-cover shrink-0 shadow-xs ring-1 ring-orange-500/30"
-                  />
-                  <div className="min-w-0">
-                    <div className="font-extrabold text-xs text-slate-900 truncate">
-                      MAS JASTIP <span className="text-blue-600 font-bold">- purbolinggo -</span>
-                    </div>
-                    <div className="text-[10px] text-slate-500 truncate flex items-center gap-1 mt-0.5">
-                      <span>🕒 10.00 - 21.00 WIB</span>
-                      <span>•</span>
-                      <span>Lampung Timur</span>
-                    </div>
+              <div className="flex items-center justify-between border-b border-slate-700/70 pb-3">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-xl bg-orange-500/20 text-orange-400 flex items-center justify-center">
+                    <Calculator className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-white text-sm">Simulasi Ongkir Cepat</h3>
+                    <p className="text-[11px] text-slate-400">Dihitung otomatis per KM rute riil</p>
+                  </div>
+                </div>
+                <span className="text-[10px] font-black uppercase px-2 py-0.5 rounded-md bg-blue-500/20 text-blue-300 border border-blue-500/30">
+                  REAL KM
+                </span>
+              </div>
+
+              {/* Route Selector Dropdown */}
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-slate-300 flex items-center gap-1">
+                  <MapPin className="w-3.5 h-3.5 text-orange-400" />
+                  <span>Pilih Contoh Rute Pengantaran:</span>
+                </label>
+                <select
+                  value={selectedRouteIdx}
+                  onChange={(e) => setSelectedRouteIdx(Number(e.target.value))}
+                  className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-blue-500 transition font-medium"
+                >
+                  {ESTIMATOR_ROUTES.map((r, i) => (
+                    <option key={i} value={i}>
+                      {r.label} ({r.km} KM)
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Estimated Results Card */}
+              <div className="bg-slate-900/90 rounded-xl p-4 border border-slate-700/60 space-y-3">
+                <div className="grid grid-cols-2 gap-3 pb-3 border-b border-slate-800 text-center">
+                  <div>
+                    <span className="text-[10px] text-slate-400 block font-medium">Jarak Tempuh</span>
+                    <span className="text-base font-black text-white font-mono flex items-center justify-center gap-1">
+                      <Route className="w-4 h-4 text-blue-400 inline" />
+                      {activeRoute.km} KM
+                    </span>
+                  </div>
+                  <div>
+                    <span className="text-[10px] text-slate-400 block font-medium">Perkiraan Waktu</span>
+                    <span className="text-base font-black text-emerald-400 font-mono flex items-center justify-center gap-1">
+                      <Clock className="w-4 h-4 text-emerald-400 inline" />
+                      ~{activeRoute.time}
+                    </span>
                   </div>
                 </div>
 
-                <div className="flex items-center gap-1.5 shrink-0">
-                  <a
-                    href="https://wa.me/6281369767697?text=Halo%20MAS%20JASTIP%20Purbolinggo%2C%20saya%20mau%20order"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="bg-emerald-500 hover:bg-emerald-600 text-white text-[11px] font-bold px-2.5 sm:px-3 py-1.5 rounded-xl transition flex items-center gap-1 shadow-xs hover:scale-105 active:scale-95"
-                    title="Buka WhatsApp MAS JASTIP Langsung"
-                  >
-                    <Phone className="w-3.5 h-3.5" />
-                    <span>WhatsApp</span>
-                  </a>
-
-                  <a
-                    href="https://www.tiktok.com/@masjastippurbolinggo01"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="bg-slate-900 hover:bg-black text-white text-[11px] font-bold px-2.5 sm:px-3 py-1.5 rounded-xl transition flex items-center gap-1 shadow-xs hover:scale-105 active:scale-95"
-                    title="Buka TikTok Resmi MAS JASTIP PURBOLINGGO 01"
-                  >
-                    <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24">
-                      <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64c.29 0 .58.04.86.12V9.4a6.33 6.33 0 0 0-.86-.06A6.34 6.34 0 0 0 3.1 15.68a6.34 6.34 0 0 0 10.82 4.49 6.27 6.27 0 0 0 1.87-4.49V8.62a8.28 8.28 0 0 0 4.8 1.52V6.69z"/>
-                    </svg>
-                    <span>TikTok</span>
-                  </a>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <span className="text-[11px] text-slate-400 block">Estimasi Ongkir Jasa:</span>
+                    <span className="text-xs text-slate-500">(Dasar + Tarif Jarak)</span>
+                  </div>
+                  <div className="text-right">
+                    <span className="text-xl font-black text-amber-400 font-heading">
+                      {formatRupiah(activeRoute.fee)}
+                    </span>
+                  </div>
                 </div>
               </div>
+
+              {/* Button to order this route */}
+              <button
+                type="button"
+                onClick={() => onStartOrder('Order (Titip Belanja)')}
+                className="w-full bg-blue-600 hover:bg-blue-500 active:scale-95 text-white font-bold py-3 px-4 rounded-xl transition text-xs sm:text-sm flex items-center justify-center gap-2 shadow-md cursor-pointer"
+              >
+                <span>Pesan Rute Ini di Formulir</span>
+                <ArrowRight className="w-4 h-4" />
+              </button>
+
+              <div className="text-center text-[10px] text-slate-400">
+                Uang belanjaan makanan/barang dibayar saat barang tiba di tempat Anda.
+              </div>
+
             </div>
           </div>
 
@@ -280,49 +308,130 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
 
       </section>
 
-      {/* Official 7 Services List (Matching Poster Exactly) */}
-      <section className="space-y-4">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+      {/* 7 Core Services: Gojek / Grab App Grid Layout */}
+      <section className="space-y-5">
+        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3">
           <div>
-            <h2 className="text-xl sm:text-2xl font-black text-slate-900 font-heading">
-              Layanan Siap Antar MAS JASTIP
+            <div className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-orange-600 mb-1">
+              <Zap className="w-3.5 h-3.5 text-orange-500" />
+              <span>Katalog Layanan Resmi</span>
+            </div>
+            <h2 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight font-heading">
+              Semua Kebutuhanmu, Tinggal Klik &amp; Beres!
             </h2>
-            <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
-              Pilih layanan yang Anda butuhkan, tim rider Mas Jastip siap melayani dengan cepat dan amanah.
+            <p className="text-xs sm:text-sm text-slate-500 mt-1">
+              Pilih kategori layanan di bawah untuk mengisi formulir pesanan secara otomatis:
             </p>
           </div>
 
-          <span className="text-xs font-bold text-blue-700 bg-blue-50 px-3 py-1.5 rounded-xl border border-blue-200 self-start sm:self-auto">
-            Semua Layanan Siap Meluncur 🛵
-          </span>
+          <div className="flex items-center gap-2 text-xs font-bold text-slate-700 bg-white border border-slate-200 px-3.5 py-1.5 rounded-xl shadow-2xs shrink-0 self-start sm:self-auto">
+            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+            <span>Tarif Transparan Tanpa Biaya Tersembunyi</span>
+          </div>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5">
-          {serviceList.map((srv, idx) => {
+        {/* Services Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3.5 sm:gap-4">
+          {CORE_SERVICES.map((srv) => {
             const Icon = srv.icon;
             return (
               <div
-                key={idx}
-                onClick={onStartOrder}
-                className="p-4 rounded-2xl border border-slate-200 bg-white hover:border-blue-500 hover:shadow-md transition cursor-pointer flex items-center justify-between gap-3 group"
+                key={srv.id}
+                onClick={() => onStartOrder(srv.type)}
+                className="group bg-white border border-slate-200/90 rounded-2xl p-4 sm:p-5 hover:border-orange-500 hover:shadow-xl hover:shadow-orange-500/5 transition-all duration-200 cursor-pointer flex flex-col justify-between"
               >
-                <div className="flex items-center gap-3">
-                  <div className="w-11 h-11 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center group-hover:scale-105 transition-transform">
-                    <Icon className="w-5 h-5" />
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div className={`w-12 h-12 rounded-2xl ${srv.bgLight} ${srv.color} flex items-center justify-center transition-all duration-200 shadow-2xs`}>
+                      <Icon className="w-6 h-6" />
+                    </div>
+                    <span className="text-[10px] font-black px-2 py-0.5 rounded-md bg-slate-100 text-slate-600 group-hover:bg-orange-50 group-hover:text-orange-700 transition uppercase tracking-wider">
+                      {srv.tag}
+                    </span>
                   </div>
+
                   <div>
-                    <h3 className="font-bold text-slate-900 text-sm">{srv.title}</h3>
-                    <span className="text-[11px] text-slate-400">Siap melayani se-Purbolinggo</span>
+                    <h3 className="font-extrabold text-slate-900 text-sm sm:text-base font-heading group-hover:text-orange-600 transition">
+                      {srv.title}
+                    </h3>
+                    <p className="text-xs text-slate-500 mt-1 line-clamp-2 leading-relaxed">
+                      {srv.desc}
+                    </p>
                   </div>
                 </div>
 
-                <span className="inline-flex items-center gap-1 text-[11px] font-black bg-blue-50 text-blue-700 border border-blue-200 px-2.5 py-1 rounded-full shrink-0">
-                  <Check className="w-3.5 h-3.5 text-blue-600" />
-                  <span>Siap</span>
-                </span>
+                <div className="pt-3.5 mt-3.5 border-t border-slate-100 flex items-center justify-between text-xs font-bold text-slate-700 group-hover:text-orange-600 transition">
+                  <span>Pesan Sekarang</span>
+                  <div className="w-7 h-7 rounded-full bg-slate-100 group-hover:bg-orange-500 group-hover:text-white flex items-center justify-center transition-all shadow-2xs">
+                    <ArrowRight className="w-3.5 h-3.5" />
+                  </div>
+                </div>
               </div>
             );
           })}
+
+          {/* Banner Card: Rute Belanja Luar Kota (Metro, Kotagajah, Bandar Jaya) */}
+          <div
+            onClick={() => onStartOrder('Order (Titip Belanja)')}
+            className="group bg-gradient-to-br from-slate-900 to-blue-950 text-white rounded-2xl p-4 sm:p-5 hover:border-orange-500 hover:shadow-xl transition-all duration-200 cursor-pointer flex flex-col justify-between border border-slate-800"
+          >
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <div className="w-12 h-12 rounded-2xl bg-orange-500/20 text-orange-400 flex items-center justify-center">
+                  <Navigation className="w-6 h-6" />
+                </div>
+                <span className="text-[10px] font-black px-2 py-0.5 rounded-md bg-orange-500/20 text-orange-300 border border-orange-500/30 uppercase tracking-wider">
+                  ANTAR KOTA
+                </span>
+              </div>
+
+              <div>
+                <h3 className="font-extrabold text-white text-sm sm:text-base font-heading group-hover:text-orange-400 transition">
+                  Titip Belanja Kota Metro
+                </h3>
+                <p className="text-xs text-slate-300 mt-1 leading-relaxed">
+                  Belanja Chandra Superstore, PB Swalayan, Pasar Cendrawasih Metro, hingga ambil barang antar wilayah.
+                </p>
+              </div>
+            </div>
+
+            <div className="pt-3.5 mt-3.5 border-t border-slate-800 flex items-center justify-between text-xs font-bold text-orange-400 group-hover:text-white transition">
+              <span>Cek Rute &amp; Biaya</span>
+              <div className="w-7 h-7 rounded-full bg-slate-800 group-hover:bg-orange-500 group-hover:text-white flex items-center justify-center transition-all">
+                <ArrowRight className="w-3.5 h-3.5" />
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      {/* Trust & Peace of Mind Banner */}
+      <section className="bg-gradient-to-r from-orange-50 via-amber-50 to-blue-50 rounded-2xl p-4 sm:p-6 border border-orange-200/80 flex flex-col md:flex-row items-center justify-between gap-4">
+        <div className="flex items-center gap-3.5">
+          <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-orange-500 to-amber-500 text-white flex items-center justify-center shrink-0 shadow-md">
+            <ShieldCheck className="w-6 h-6" />
+          </div>
+          <div>
+            <h4 className="font-black text-slate-900 text-sm sm:text-base font-heading">
+              Komitmen Layanan Amanah &amp; Transparan
+            </h4>
+            <p className="text-xs text-slate-600 mt-0.5 leading-relaxed">
+              Barang belanjaan selalu disertai nota resmi toko. Anda hanya membayar harga belanja asli sesuai nota + ongkir resmi.
+            </p>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-3 shrink-0">
+          <a
+            href="https://wa.me/6285789528805?text=Halo%20MAS%20JASTIP%20Purbolinggo%2C%20saya%20mau%20konsultasi%20jasa"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-xs font-bold text-slate-800 hover:text-emerald-700 bg-white hover:bg-emerald-50 px-4 py-2.5 rounded-xl border border-slate-200 hover:border-emerald-300 transition flex items-center gap-2 shadow-2xs"
+          >
+            <Phone className="w-4 h-4 text-emerald-600" />
+            <span>Hotline WA: 0857-8952-8805</span>
+          </a>
         </div>
       </section>
 

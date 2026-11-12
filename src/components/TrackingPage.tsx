@@ -22,6 +22,7 @@ import { Order, OrderStatus } from '../types';
 import { findOrderByCode, getOrders, subscribeToStore, formatRupiah } from '../services/storageService';
 import { getGoogleMapsNavUrl } from '../services/routingService';
 import { MapPicker } from './MapPicker';
+import { ShopeeFoodTrackingView } from './ShopeeFoodTrackingView';
 
 interface TrackingPageProps {
   initialCode?: string;
@@ -33,7 +34,7 @@ const TRACKING_STEPS: { status: OrderStatus; label: string; desc: string; icon: 
   {
     status: 'Menunggu Kurir',
     label: 'Pesanan Masuk',
-    desc: 'Pesanan tersimpan di sistem MAS JASTIP Purbolinggo',
+    desc: 'Pesanan tersimpan di sistem JSP KURIR Purbolinggo',
     icon: Clock,
   },
   {
@@ -85,6 +86,7 @@ export const TrackingPage: React.FC<TrackingPageProps> = ({
   const [inputCode, setInputCode] = useState(initialCode);
   const [searchedOrder, setSearchedOrder] = useState<Order | null>(() => findOrderByCode(initialCode) || null);
   const [hasSearched, setHasSearched] = useState(true);
+  const [viewMode, setViewMode] = useState<'shopee' | 'classic'>('shopee');
 
   // Subscribe to reactive store changes (e.g. when courier GPS broadcast or status update occurs)
   useEffect(() => {
@@ -138,13 +140,13 @@ export const TrackingPage: React.FC<TrackingPageProps> = ({
         <div className="flex items-center justify-center">
           <img
             src="/mas-jastip-logo.png"
-            alt="Logo Profil MAS JASTIP - purbolinggo -"
-            className="w-16 h-16 sm:w-20 sm:h-20 rounded-full object-cover ring-4 ring-orange-500/30 shadow-md hover:scale-105 transition-transform"
+            alt="Logo Resmi MAS JASTIP Purbolinggo"
+            className="w-16 h-16 sm:w-20 sm:h-20 rounded-full object-cover ring-4 ring-orange-500 shadow-md hover:scale-105 transition-transform"
           />
         </div>
 
-        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 text-blue-700 text-xs font-bold">
-          <Radio className="w-4 h-4 text-blue-600 animate-pulse" />
+        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-orange-50 text-orange-700 text-xs font-bold border border-orange-200">
+          <Radio className="w-4 h-4 text-orange-600 animate-pulse" />
           <span>Pelacakan GPS &amp; Status Realtime</span>
         </div>
 
@@ -152,7 +154,7 @@ export const TrackingPage: React.FC<TrackingPageProps> = ({
           <h2 className="text-2xl sm:text-4xl font-black text-slate-900 tracking-tight font-heading">
             Lacak Pesanan MAS JASTIP
           </h2>
-          <span className="inline-block mt-1 text-xs font-black px-2.5 py-0.5 rounded-full bg-blue-600 text-white shadow-2xs tracking-wider">
+          <span className="inline-block mt-1 text-xs font-black px-2.5 py-0.5 rounded-full bg-gradient-to-r from-orange-500 to-amber-500 text-white shadow-2xs tracking-wider">
             - purbolinggo -
           </span>
         </div>
@@ -204,7 +206,53 @@ export const TrackingPage: React.FC<TrackingPageProps> = ({
 
       {/* Searched Order Result Card */}
       {searchedOrder ? (
-        <div className="bg-white border border-slate-200/90 rounded-3xl p-6 sm:p-8 shadow-xs space-y-6">
+        <div className="space-y-6">
+          {/* View Mode Toggle Pill Bar */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white p-3 rounded-2xl border border-slate-200/90 shadow-xs">
+            <div className="flex items-center gap-2">
+              <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
+              <span className="text-xs font-bold text-slate-700">Tampilan Pelacakan Langsung:</span>
+            </div>
+            
+            <div className="inline-flex items-center bg-slate-100 p-1 rounded-xl self-start sm:self-auto">
+              <button
+                type="button"
+                onClick={() => setViewMode('shopee')}
+                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5 ${
+                  viewMode === 'shopee'
+                    ? 'bg-orange-500 text-white shadow-xs'
+                    : 'text-slate-600 hover:text-slate-900'
+                }`}
+              >
+                <Bike className="w-3.5 h-3.5" />
+                <span>Mode ShopeeFood (Motor OTW)</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setViewMode('classic')}
+                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5 ${
+                  viewMode === 'classic'
+                    ? 'bg-blue-600 text-white shadow-xs'
+                    : 'text-slate-600 hover:text-slate-900'
+                }`}
+              >
+                <FileText className="w-3.5 h-3.5" />
+                <span>Mode Rincian Detail</span>
+              </button>
+            </div>
+          </div>
+
+          {/* Active Tracking Content */}
+          {viewMode === 'shopee' ? (
+            <ShopeeFoodTrackingView
+              order={searchedOrder}
+              onRefresh={() => {
+                const updated = findOrderByCode(searchedOrder.orderCode);
+                if (updated) setSearchedOrder(updated);
+              }}
+            />
+          ) : (
+            <div className="bg-white border border-slate-200/90 rounded-3xl p-6 sm:p-8 shadow-xs space-y-6">
           
           {/* Top Order Summary Banner */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-slate-100">
@@ -347,11 +395,11 @@ export const TrackingPage: React.FC<TrackingPageProps> = ({
               {searchedOrder.courierName && (
                 <div className="flex items-center gap-2">
                   <a
-                    href={`https://wa.me/6281369767697?text=Halo%20rider%20MAS%20JASTIP%20Purbolinggo%20(${encodeURIComponent(searchedOrder.courierName)})%2C%20saya%20pemesan%20${searchedOrder.orderCode}`}
+                    href={`https://wa.me/6285789528805?text=Halo%20kurir%20JSP%20KURIR%20Purbolinggo%20(${encodeURIComponent(searchedOrder.courierName)})%2C%20saya%20pemesan%20${searchedOrder.orderCode}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="p-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl transition flex items-center gap-1.5 font-bold text-xs shadow-xs"
-                    title="Hubungi WhatsApp Rider"
+                    title="Hubungi WhatsApp Kurir"
                   >
                     <Phone className="w-3.5 h-3.5" />
                     <span className="hidden sm:inline">WhatsApp</span>
@@ -428,6 +476,8 @@ export const TrackingPage: React.FC<TrackingPageProps> = ({
             </div>
           )}
 
+            </div>
+          )}
         </div>
       ) : (
         hasSearched && (

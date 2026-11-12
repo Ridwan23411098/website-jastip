@@ -119,61 +119,152 @@ function generateCurvedRoadRoute(
   };
 }
 
+import { LOCATION_LANDMARKS } from '../data/initialData';
+import { LocationLandmark } from '../types';
+
 export interface AddressSearchResult {
   displayName: string;
   lat: number;
   lng: number;
   name: string;
+  category?: string;
+  categoryLabel?: string;
+  isCurated?: boolean;
 }
 
 /**
- * Autocomplete address search using Nominatim OpenStreetMap API
+ * Find the best matching curated landmark for any input query.
+ * Useful for instant auto-sync when a user types "metro", "kotagajah", "sukadana", etc.
+ */
+export function findBestLandmarkMatch(query: string): LocationLandmark | null {
+  if (!query || query.trim().length < 2) return null;
+  const q = query.toLowerCase().trim();
+
+  // 1. Exact alias match
+  for (const loc of LOCATION_LANDMARKS) {
+    if (loc.aliases.some((alias) => alias.toLowerCase() === q)) {
+      return loc;
+    }
+  }
+
+  // 2. Exact name or address match
+  for (const loc of LOCATION_LANDMARKS) {
+    if (loc.name.toLowerCase() === q || loc.address.toLowerCase() === q) {
+      return loc;
+    }
+  }
+
+  // 3. Substring match on aliases or name
+  for (const loc of LOCATION_LANDMARKS) {
+    if (
+      loc.aliases.some((alias) => q.includes(alias.toLowerCase())) ||
+      loc.name.toLowerCase().includes(q)
+    ) {
+      return loc;
+    }
+  }
+
+  return null;
+}
+
+/**
+ * Autocomplete address search that prioritizes accurate local landmarks
+ * in Purbolinggo, Kota Metro, Lampung Tengah, and Lampung Timur,
+ * with fallback to OpenStreetMap Nominatim.
  */
 export async function searchAddressOnline(query: string): Promise<AddressSearchResult[]> {
-  if (!query || query.trim().length < 3) return [];
+  if (!query || query.trim().length < 2) return [];
+  const q = query.toLowerCase().trim();
+
+  // 1. Curated local landmarks matching
+  const localMatches: AddressSearchResult[] = LOCATION_LANDMARKS.filter((loc) => {
+    return (
+      loc.name.toLowerCase().includes(q) ||
+      loc.address.toLowerCase().includes(q) ||
+      loc.aliases.some((alias) => alias.toLowerCase().includes(q))
+    );
+  }).map((loc) => ({
+    displayName: `${loc.name} (${loc.categoryLabel}) - ${loc.address}`,
+    name: loc.name,
+    lat: loc.lat,
+    lng: loc.lng,
+    category: loc.category,
+    categoryLabel: loc.categoryLabel,
+    isCurated: true,
+  }));
+
+  // If query specifically targets a well-known area and we have local matches,
+  // return them right away for instant feedback
+  let onlineResults: AddressSearchResult[] = [];
 
   try {
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 3500);
+    const timeoutId = setTimeout(() => controller.abort(), 2500);
 
-    const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&countrycodes=id&limit=5&addressdetails=1`;
+    // Bias search to Lampung, Indonesia
+    const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(
+      query + ', Lampung'
+    )}&countrycodes=id&limit=4&addressdetails=1`;
     const res = await fetch(url, {
       signal: controller.signal,
       headers: {
         'Accept-Language': 'id',
+        'User-Agent': 'MasJastipPurbolinggo/1.0',
       },
     });
     clearTimeout(timeoutId);
 
     if (res.ok) {
       const data = await res.json();
-      return data.map((item: any) => ({
+      onlineResults = data.map((item: any) => ({
         displayName: item.display_name,
         name: item.name || item.display_name.split(',')[0],
         lat: parseFloat(item.lat),
         lng: parseFloat(item.lon),
+        isCurated: false,
       }));
     }
   } catch (err) {
-    console.warn('Address autocomplete search error:', err);
+    // ignore online search error, local landmarks already cover main destinations
   }
 
-  return [];
+  // Combine curated results first, then online results
+  const combined = [...localMatches];
+  for (const item of onlineResults) {
+    const isDuplicate = combined.some(
+      (c) => Math.abs(c.lat - item.lat) < 0.005 && Math.abs(c.lng - item.lng) < 0.005
+    );
+    if (!isDuplicate) {
+      combined.push(item);
+    }
+  }
+
+  return combined.slice(0, 8);
 }
 
 /**
  * Reverse geocode coordinates to street address
  */
 export async function reverseGeocodeCoords(lat: number, lng: number): Promise<string> {
+  // Check if close to a curated landmark first (< 300m)
+  for (const loc of LOCATION_LANDMARKS) {
+    const dLat = Math.abs(loc.lat - lat);
+    const dLng = Math.abs(loc.lng - lng);
+    if (dLat < 0.003 && dLng < 0.003) {
+      return `${loc.name}, ${loc.categoryLabel}`;
+    }
+  }
+
   try {
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 3500);
+    const timeoutId = setTimeout(() => controller.abort(), 2500);
 
     const url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1`;
     const res = await fetch(url, {
       signal: controller.signal,
       headers: {
         'Accept-Language': 'id',
+        'User-Agent': 'MasJastipPurbolinggo/1.0',
       },
     });
     clearTimeout(timeoutId);
@@ -190,3 +281,4 @@ export async function reverseGeocodeCoords(lat: number, lng: number): Promise<st
 
   return `Koordinat [${lat.toFixed(4)}, ${lng.toFixed(4)}]`;
 }
+

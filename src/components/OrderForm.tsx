@@ -12,6 +12,7 @@ import {
   Navigation,
   Info,
   ArrowRight,
+  ArrowLeftRight,
   Search,
   Loader2,
   Route,
@@ -27,7 +28,7 @@ import {
 } from 'lucide-react';
 import { ServiceType, Order } from '../types';
 import { MapPicker } from './MapPicker';
-import { POPULAR_LOCATIONS } from '../data/initialData';
+import { POPULAR_LOCATIONS, LOCATION_LANDMARKS } from '../data/initialData';
 import {
   calculateFare,
   formatRupiah,
@@ -37,7 +38,9 @@ import {
 import {
   getRealRoadRoute,
   searchAddressOnline,
-  RouteCalculationResult
+  findBestLandmarkMatch,
+  RouteCalculationResult,
+  AddressSearchResult
 } from '../services/routingService';
 import { getCurrentUser } from '../services/authService';
 import confetti from 'canvas-confetti';
@@ -45,6 +48,7 @@ import confetti from 'canvas-confetti';
 interface OrderFormProps {
   onOrderCreated: (order: Order) => void;
   onCancel?: () => void;
+  initialServiceType?: ServiceType;
 }
 
 // 7 Layanan Resmi Sesuai Poster MAS JASTIP Purbolinggo
@@ -93,11 +97,105 @@ const MAS_SERVICES: { type: ServiceType; label: string; desc: string; icon: any 
   },
 ];
 
-export const OrderForm: React.FC<OrderFormProps> = ({ onOrderCreated, onCancel }) => {
+// Template Rute Populer Antar Wilayah MAS JASTIP
+export const POPULAR_ROUTE_PRESETS = [
+  {
+    id: 'preset-metro-chandra',
+    badge: 'KOTA METRO',
+    title: 'Belanja Chandra Kota Metro ke Purbolinggo',
+    kmLabel: '~25.1 KM',
+    pickupName: 'Chandra Superstore Kota Metro, Jl. Iringmulyo, Metro Timur',
+    pickupCoords: [-5.1135, 105.3072] as [number, number],
+    destName: 'Desa Taman Fajar (Pusat Kecamatan), Purbolinggo, Lamtim',
+    destCoords: [-5.0092, 105.4880] as [number, number],
+    serviceType: 'Order (Titip Belanja)' as ServiceType,
+    detail: 'Titip belanja perlengkapan / kebutuhan di Chandra Superstore Kota Metro.',
+  },
+  {
+    id: 'preset-metro-pb',
+    badge: 'KOTA METRO',
+    title: 'Belanja PB Swalayan Metro ke Purbolinggo',
+    kmLabel: '~25.0 KM',
+    pickupName: 'PB Swalayan Kota Metro, Jl. AH Nasution, Yosorejo',
+    pickupCoords: [-5.1118, 105.3085] as [number, number],
+    destName: 'Desa Taman Endah, Kec. Purbolinggo, Lampung Timur',
+    destCoords: [-5.0185, 105.5020] as [number, number],
+    serviceType: 'Order (Titip Belanja)' as ServiceType,
+    detail: 'Titip belanja sembako / jajanan di PB Swalayan Kota Metro.',
+  },
+  {
+    id: 'preset-kotagajah',
+    badge: 'LAMPUNG TENGAH',
+    title: 'Belanja Pasar Kotagajah ke Purbolinggo',
+    kmLabel: '~23.9 KM',
+    pickupName: 'Pasar Kotagajah, Jl. Raya Kotagajah, Lampung Tengah',
+    pickupCoords: [-4.9820, 105.3280] as [number, number],
+    destName: 'Desa Taman Fajar, Kec. Purbolinggo, Lampung Timur',
+    destCoords: [-5.0092, 105.4880] as [number, number],
+    serviceType: 'Order (Titip Belanja)' as ServiceType,
+    detail: 'Titip beli barang di Pasar Kotagajah Lampung Tengah.',
+  },
+  {
+    id: 'preset-bandarjaya',
+    badge: 'LAMPUNG TENGAH',
+    title: 'Belanja Plaza Bandar Jaya ke Purbolinggo',
+    kmLabel: '~46.5 KM',
+    pickupName: 'Plaza Bandar Jaya, Terbanggi Besar, Lampung Tengah',
+    pickupCoords: [-4.9080, 105.2100] as [number, number],
+    destName: 'Desa Taman Fajar, Kec. Purbolinggo, Lampung Timur',
+    destCoords: [-5.0092, 105.4880] as [number, number],
+    serviceType: 'Order (Titip Belanja)' as ServiceType,
+    detail: 'Titip belanja pakaian / perlengkapan di Plaza Bandar Jaya Lamteng.',
+  },
+  {
+    id: 'preset-kirim-metro',
+    badge: 'PURBOLINGGO ➔ METRO',
+    title: 'Kirim Barang Purbolinggo ke Kota Metro',
+    kmLabel: '~25.4 KM',
+    pickupName: 'Pasar Purbolinggo, Simpang Pasar, Purbolinggo',
+    pickupCoords: [-5.0078, 105.4875] as [number, number],
+    destName: 'Pasar Cendrawasih / Alun-Alun Kota Metro',
+    destCoords: [-5.1145, 105.3055] as [number, number],
+    serviceType: 'Ambil / Antar Barang' as ServiceType,
+    detail: 'Kirim paket / dokumen dari Purbolinggo menuju Kota Metro.',
+  },
+  {
+    id: 'preset-sukadana',
+    badge: 'LAMPUNG TIMUR',
+    title: 'Antar Berkas ke Pemkab Lamtim Sukadana',
+    kmLabel: '~25.9 KM',
+    pickupName: 'Desa Toto Harjo, Kec. Purbolinggo, Lampung Timur',
+    pickupCoords: [-5.0340, 105.4950] as [number, number],
+    destName: 'Kompleks Pemkab & RSUD Sukadana, Lampung Timur',
+    destCoords: [-5.0880, 105.5450] as [number, number],
+    serviceType: 'Ambil / Antar Barang' as ServiceType,
+    detail: 'Antar dokumen dinas penting ke loket Pemkab Sukadana.',
+  },
+  {
+    id: 'preset-lokal',
+    badge: 'LOKAL PURBOLINGGO',
+    title: 'Pesan Kuliner Simpang Pasar ke Taman Endah',
+    kmLabel: '~3.4 KM',
+    pickupName: 'Warung Bakso Simpang Pasar Purbolinggo',
+    pickupCoords: [-5.0078, 105.4875] as [number, number],
+    destName: 'Desa Taman Endah (Dusun 2), Kec. Purbolinggo',
+    destCoords: [-5.0185, 105.5020] as [number, number],
+    serviceType: 'Pesanin Makanan/Minuman' as ServiceType,
+    detail: 'Pesanin makanan/minuman dari warung Pasar Purbolinggo kuah dipisah.',
+  },
+];
+
+export const OrderForm: React.FC<OrderFormProps> = ({ onOrderCreated, onCancel, initialServiceType }) => {
   const loggedInUser = getCurrentUser();
 
   // 1. Service Type (Default: Pesanin Makanan/Minuman)
-  const [serviceType, setServiceType] = useState<ServiceType>('Pesanin Makanan/Minuman');
+  const [serviceType, setServiceType] = useState<ServiceType>(initialServiceType || 'Pesanin Makanan/Minuman');
+
+  useEffect(() => {
+    if (initialServiceType) {
+      setServiceType(initialServiceType);
+    }
+  }, [initialServiceType]);
 
   // Check if this service involves purchasing goods
   const isShoppingType =
@@ -129,8 +227,8 @@ export const OrderForm: React.FC<OrderFormProps> = ({ onOrderCreated, onCancel }
 
   // 6. Real Road Route State
   const [routeData, setRouteData] = useState<RouteCalculationResult>({
-    distanceKm: 2.8,
-    durationMinutes: 7,
+    distanceKm: 3.4,
+    durationMinutes: 10,
     waypoints: [
       [-5.0078, 105.4875],
       [-5.0092, 105.4880],
@@ -143,8 +241,8 @@ export const OrderForm: React.FC<OrderFormProps> = ({ onOrderCreated, onCancel }
   const [isCalculatingRoute, setIsCalculatingRoute] = useState(false);
 
   // Autocomplete search states
-  const [pickupSuggestions, setPickupSuggestions] = useState<Array<{ name: string; lat: number; lng: number }>>([]);
-  const [destSuggestions, setDestSuggestions] = useState<Array<{ name: string; lat: number; lng: number }>>([]);
+  const [pickupSuggestions, setPickupSuggestions] = useState<AddressSearchResult[]>([]);
+  const [destSuggestions, setDestSuggestions] = useState<AddressSearchResult[]>([]);
   const [isSearchingPickup, setIsSearchingPickup] = useState(false);
   const [isSearchingDest, setIsSearchingDest] = useState(false);
 
@@ -178,13 +276,20 @@ export const OrderForm: React.FC<OrderFormProps> = ({ onOrderCreated, onCancel }
   const fareResult = calculateFare(serviceType, effectiveDistance, isShoppingType ? goodsPrice : 0);
   const tariffConfig = getTariffConfig();
 
-  // Search Address Handlers with debounce
+  // Search Address Handlers with debounce & instant landmark matching
   const searchTimeoutRef = useRef<any>(null);
 
   const handlePickupInputChange = (val: string) => {
     setPickupAddress(val);
+
+    // Instant match against curated landmarks (e.g., user typed "metro", "chandra", "kotagajah")
+    const match = findBestLandmarkMatch(val);
+    if (match) {
+      setPickupCoords([match.lat, match.lng]);
+    }
+
     if (searchTimeoutRef.current) clearTimeout(searchTimeoutRef.current);
-    if (val.trim().length < 3) {
+    if (val.trim().length < 2) {
       setPickupSuggestions([]);
       return;
     }
@@ -193,13 +298,20 @@ export const OrderForm: React.FC<OrderFormProps> = ({ onOrderCreated, onCancel }
       const results = await searchAddressOnline(val);
       setPickupSuggestions(results);
       setIsSearchingPickup(false);
-    }, 400);
+    }, 250);
   };
 
   const handleDestInputChange = (val: string) => {
     setDestAddress(val);
+
+    // Instant match against curated landmarks (e.g., user typed "metro", "chandra", "kotagajah", "sukadana")
+    const match = findBestLandmarkMatch(val);
+    if (match) {
+      setDestCoords([match.lat, match.lng]);
+    }
+
     if (searchTimeoutRef.current) clearTimeout(searchTimeoutRef.current);
-    if (val.trim().length < 3) {
+    if (val.trim().length < 2) {
       setDestSuggestions([]);
       return;
     }
@@ -208,7 +320,45 @@ export const OrderForm: React.FC<OrderFormProps> = ({ onOrderCreated, onCancel }
       const results = await searchAddressOnline(val);
       setDestSuggestions(results);
       setIsSearchingDest(false);
-    }, 400);
+    }, 250);
+  };
+
+  const handlePickupBlur = () => {
+    const match = findBestLandmarkMatch(pickupAddress);
+    if (match) {
+      setPickupCoords([match.lat, match.lng]);
+    }
+  };
+
+  const handleDestBlur = () => {
+    const match = findBestLandmarkMatch(destAddress);
+    if (match) {
+      setDestCoords([match.lat, match.lng]);
+    }
+  };
+
+  // 1-Click Swap Pickup and Destination
+  const handleSwapPoints = () => {
+    const tempAddress = pickupAddress;
+    const tempCoords = pickupCoords;
+    setPickupAddress(destAddress);
+    setPickupCoords(destCoords);
+    setDestAddress(tempAddress);
+    setDestCoords(tempCoords);
+  };
+
+  // Apply Quick Route Preset
+  const handleApplyPreset = (preset: typeof POPULAR_ROUTE_PRESETS[0]) => {
+    setPickupAddress(preset.pickupName);
+    setPickupCoords(preset.pickupCoords);
+    setDestAddress(preset.destName);
+    setDestCoords(preset.destCoords);
+    setServiceType(preset.serviceType);
+    if (!requestDetail.trim()) {
+      setRequestDetail(preset.detail);
+    }
+    setPickupSuggestions([]);
+    setDestSuggestions([]);
   };
 
   // Handle map selection
@@ -225,6 +375,7 @@ export const OrderForm: React.FC<OrderFormProps> = ({ onOrderCreated, onCancel }
       setDestSuggestions([]);
     }
   };
+
 
   // Submit Order
   const handleSubmit = (e: React.FormEvent) => {
@@ -299,62 +450,63 @@ export const OrderForm: React.FC<OrderFormProps> = ({ onOrderCreated, onCancel }
     <div className="max-w-4xl mx-auto space-y-6">
       
       {/* Operating Hours & Hotline Strip */}
-      <div className="bg-gradient-to-r from-blue-600 to-sky-600 rounded-3xl p-3 sm:p-4 text-white shadow-xs flex flex-wrap items-center justify-between gap-3 text-xs">
+      <div className="bg-gradient-to-r from-[#070d24] via-[#0d1c47] to-[#070d24] border border-blue-900/60 rounded-3xl p-3 sm:p-4 text-white shadow-md flex flex-wrap items-center justify-between gap-3 text-xs">
         <div className="flex items-center gap-2.5">
           <img
             src="/mas-jastip-logo.png"
-            alt="Logo MAS JASTIP - purbolinggo -"
-            className="w-9 h-9 rounded-full object-cover ring-2 ring-orange-400 shadow-sm shrink-0"
+            alt="Logo JSP KURIR - Purbolinggo"
+            className="w-9 h-9 rounded-full object-cover ring-2 ring-orange-500 shadow-sm shrink-0"
           />
           <div className="flex items-center gap-1.5 flex-wrap">
-            <span className="font-extrabold tracking-wide">MAS JASTIP</span>
-            <span className="text-[10px] font-black px-2 py-0.5 rounded-full bg-blue-800 text-white">- purbolinggo -</span>
-            <span className="hidden sm:inline text-blue-100">• Jam Operasional: 10.00 - 21.00 WIB</span>
+            <span className="font-black tracking-wide text-white">MAS JASTIP</span>
+            <span className="text-[10px] font-black px-2 py-0.5 rounded-full bg-gradient-to-r from-orange-500 to-amber-500 text-white shadow-2xs">- purbolinggo -</span>
+            <span className="hidden sm:inline text-sky-200">• Jam Operasional: 10.00 - 21.00 WIB</span>
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <span className="bg-white/20 px-2.5 py-1 rounded-lg font-bold">ONGKIR TERGANTUNG KM</span>
+          <span className="bg-white/10 px-2.5 py-1 rounded-lg font-bold text-amber-300 border border-white/10">ONGKIR PER KM</span>
           <a
-            href="https://wa.me/6281369767697?text=Halo%20MAS%20JASTIP%20Purbolinggo%2C%20saya%20mau%20tanya%20jasa"
+            href="https://wa.me/6285789528805?text=Halo%20Jasa%20Suruh%20Purbolinggo%20(JSP%20Kurir)%2C%20saya%20mau%20order%20jasa"
             target="_blank"
             rel="noopener noreferrer"
-            className="bg-emerald-500 hover:bg-emerald-600 px-3 py-1 rounded-lg font-bold transition flex items-center gap-1 shadow-xs hover:scale-105 active:scale-95"
-            title="Chat WhatsApp MAS JASTIP Langsung"
+            className="bg-emerald-500 hover:bg-emerald-600 px-3 py-1 rounded-lg font-bold transition flex items-center gap-1 shadow-xs hover:scale-105 active:scale-95 text-white"
+            title="Chat WhatsApp JSP Kurir"
           >
             <Phone className="w-3.5 h-3.5" />
-            <span>0813-6976-7697</span>
+            <span>0857-8952-8805</span>
           </a>
         </div>
       </div>
 
-      <div className="bg-white border border-slate-200/90 rounded-3xl p-6 sm:p-10 shadow-xs">
+      <div className="bg-white border border-slate-200/90 rounded-2xl sm:rounded-3xl p-4 sm:p-8 lg:p-10 shadow-xs">
         
         {/* Form Title & Subtitle with Profile Identity */}
-        <div className="pb-6 border-b border-slate-100 mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="pb-5 sm:pb-6 border-b border-slate-100 mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 text-blue-700 text-xs font-bold mb-2">
-              <Sparkles className="w-4 h-4 text-blue-600" />
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-orange-50 text-orange-700 text-xs font-bold mb-2 border border-orange-200">
+              <Sparkles className="w-4 h-4 text-orange-600" />
               <span>Formulir Pesanan Resmi</span>
             </div>
-            <h2 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight font-heading">
-              Mudahnya serahin ke MAS JASTIP
+            <h2 className="text-xl sm:text-3xl font-black text-slate-900 tracking-tight font-heading">
+              &ldquo;SERAHKAN SEMUA BERES!&rdquo;
             </h2>
-            <p className="text-sm text-slate-500 mt-1">
+            <p className="text-xs sm:text-sm text-slate-500 mt-1">
               Pilih layanan jasa di bawah ini. Jarak dihitung otomatis per KM rute jalan raya sebenarnya, transparan &amp; amanah.
             </p>
           </div>
-          <div className="flex items-center gap-3 p-2.5 px-3 rounded-2xl bg-orange-50/70 border border-orange-200/80 self-start sm:self-auto shrink-0">
+          <div className="hidden sm:flex items-center gap-3 p-2.5 px-3 rounded-2xl bg-orange-50/70 border border-orange-200/80 shrink-0">
             <img
               src="/mas-jastip-logo.png"
-              alt="Profil MAS JASTIP - purbolinggo -"
-              className="w-12 h-12 rounded-full object-cover ring-2 ring-orange-500/50 shadow-xs"
+              alt="Profil JSP JASA SURUH PURBOLINGGO"
+              className="w-12 h-12 rounded-full object-cover ring-2 ring-orange-500 shadow-xs"
             />
+
             <div>
               <div className="text-xs font-black text-slate-900">MAS JASTIP</div>
-              <div className="text-[10px] font-bold text-blue-600">- purbolinggo -</div>
+              <div className="text-[10px] font-bold text-orange-600">- purbolinggo -</div>
               <div className="flex items-center gap-1.5 mt-1">
                 <a
-                  href="https://wa.me/6281369767697?text=Halo%20MAS%20JASTIP%20Purbolinggo%2C%20saya%20mau%20order%20jasa"
+                  href="https://wa.me/6285789528805?text=Halo%20Jasa%20Suruh%20Purbolinggo%20(JSP%20Kurir)%2C%20saya%20mau%20order%20jasa"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-[10px] font-bold text-white bg-emerald-600 hover:bg-emerald-700 px-2 py-0.5 rounded-md transition shadow-2xs"
@@ -390,7 +542,7 @@ export const OrderForm: React.FC<OrderFormProps> = ({ onOrderCreated, onCancel }
           <div>
             <div className="flex items-center justify-between mb-2.5">
               <label className="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
-                <span>Pilih Layanan MAS JASTIP:</span>
+                <span>Pilih Layanan JSP KURIR:</span>
               </label>
               <span className="text-[11px] font-bold text-blue-600 bg-blue-50 px-2.5 py-0.5 rounded-full border border-blue-200">
                 Amanah • Cepat • Ramah
@@ -480,10 +632,45 @@ export const OrderForm: React.FC<OrderFormProps> = ({ onOrderCreated, onCancel }
             </div>
           </div>
 
-          {/* 3. Lokasi Penjemputan & Tujuan Inputs */}
+          {/* 3. Lokasi Penjemputan & Tujuan Inputs dengan Rute Cepat Antar Wilayah */}
           <div className="space-y-4 pt-2">
             
-            {/* Lokasi Jemput */}
+            {/* Quick 1-Click Route Presets Bar */}
+            <div className="bg-gradient-to-r from-blue-50 via-sky-50 to-indigo-50 p-3.5 rounded-2xl border border-blue-200/80">
+              <div className="flex items-center justify-between gap-2 mb-2">
+                <span className="text-xs font-bold text-blue-900 flex items-center gap-1.5">
+                  <Sparkles className="w-4 h-4 text-orange-500" />
+                  <span>Pilihan Rute Cepat Antar Wilayah (1-Klik Langsung Pas):</span>
+                </span>
+                <span className="text-[10px] font-bold text-blue-700 bg-white px-2 py-0.5 rounded-full border border-blue-200">
+                  Akurat &amp; Real KM
+                </span>
+              </div>
+              <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
+                {POPULAR_ROUTE_PRESETS.map((p) => (
+                  <button
+                    key={p.id}
+                    type="button"
+                    onClick={() => handleApplyPreset(p)}
+                    className="shrink-0 text-left bg-white hover:bg-blue-600 hover:text-white group border border-blue-200/80 rounded-xl px-3 py-2 transition shadow-2xs hover:shadow-md active:scale-95"
+                  >
+                    <div className="flex items-center gap-1.5 mb-0.5">
+                      <span className="text-[9px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded bg-blue-100 text-blue-800 group-hover:bg-white/20 group-hover:text-white">
+                        {p.badge}
+                      </span>
+                      <span className="text-[10px] font-bold text-slate-500 group-hover:text-blue-100 font-mono">
+                        {p.kmLabel}
+                      </span>
+                    </div>
+                    <div className="text-xs font-bold text-slate-800 group-hover:text-white line-clamp-1">
+                      {p.title}
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Lokasi Jemput (Titik A) */}
             <div className="relative">
               <div className="flex items-center justify-between mb-2">
                 <label className="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
@@ -509,7 +696,8 @@ export const OrderForm: React.FC<OrderFormProps> = ({ onOrderCreated, onCancel }
                   type="text"
                   value={pickupAddress}
                   onChange={(e) => handlePickupInputChange(e.target.value)}
-                  placeholder="Ketik alamat penjemputan, toko, pasar, atau jalan..."
+                  onBlur={handlePickupBlur}
+                  placeholder="Ketik alamat jemput, toko di Purbolinggo / Metro / Lamteng..."
                   required
                   className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 pl-11 pr-10 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:border-blue-600 focus:bg-white transition"
                 />
@@ -521,9 +709,9 @@ export const OrderForm: React.FC<OrderFormProps> = ({ onOrderCreated, onCancel }
                 )}
               </div>
 
-              {/* Suggestions Dropdown */}
+              {/* Suggestions Dropdown for Pickup */}
               {pickupSuggestions.length > 0 && (
-                <div className="absolute z-20 left-0 right-0 mt-1 bg-white border border-slate-200 rounded-2xl shadow-xl max-h-60 overflow-y-auto divide-y divide-slate-100">
+                <div className="absolute z-20 left-0 right-0 mt-1 bg-white border border-slate-200 rounded-2xl shadow-xl max-h-64 overflow-y-auto divide-y divide-slate-100">
                   {pickupSuggestions.map((sug, idx) => (
                     <button
                       key={idx}
@@ -536,17 +724,51 @@ export const OrderForm: React.FC<OrderFormProps> = ({ onOrderCreated, onCancel }
                       className="w-full text-left px-4 py-2.5 hover:bg-blue-50 text-xs text-slate-800 flex items-start gap-2.5 transition"
                     >
                       <MapPin className="w-4 h-4 text-blue-600 shrink-0 mt-0.5" />
-                      <div>
-                        <span className="font-semibold block">{sug.name}</span>
-                        <span className="text-[10px] text-slate-400 font-mono">[{sug.lat.toFixed(4)}, {sug.lng.toFixed(4)}]</span>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          <span className="font-bold text-slate-900">{sug.name}</span>
+                          {sug.categoryLabel && (
+                            <span className="text-[9px] font-black uppercase px-1.5 py-0.5 rounded bg-blue-100 text-blue-700">
+                              {sug.categoryLabel}
+                            </span>
+                          )}
+                          {sug.isCurated && (
+                            <span className="text-[9px] font-black px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-700">
+                              PATOKAN RESMI
+                            </span>
+                          )}
+                        </div>
+                        <span className="text-[10px] text-slate-500 block truncate">{sug.displayName}</span>
                       </div>
                     </button>
                   ))}
                 </div>
               )}
+
+              {/* Detected Landmark Confirmation Badge */}
+              <div className="mt-1 flex items-center justify-between text-[11px] text-slate-500">
+                <span className="flex items-center gap-1 truncate">
+                  <span className="font-semibold text-blue-700">Titik A:</span>
+                  <span className="font-mono text-slate-600">[{pickupCoords[0].toFixed(4)}, {pickupCoords[1].toFixed(4)}]</span>
+                </span>
+                <span className="text-[10px] text-slate-400">Ketik nama kota/toko untuk auto-sync</span>
+              </div>
             </div>
 
-            {/* Lokasi Tujuan */}
+            {/* Swap Button (Tukar Titik A ⇄ B) */}
+            <div className="flex justify-center -my-1">
+              <button
+                type="button"
+                onClick={handleSwapPoints}
+                className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-slate-100 hover:bg-blue-50 text-slate-700 hover:text-blue-700 border border-slate-300 hover:border-blue-300 font-bold text-xs transition shadow-2xs active:scale-95"
+                title="Tukar Titik Jemput (A) dan Titik Tujuan (B)"
+              >
+                <ArrowLeftRight className="w-3.5 h-3.5 text-blue-600" />
+                <span>Tukar Titik A ⇄ B (Balikkan Arah Rute)</span>
+              </button>
+            </div>
+
+            {/* Lokasi Tujuan (Titik B) */}
             <div className="relative">
               <div className="flex items-center justify-between mb-2">
                 <label className="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
@@ -572,7 +794,8 @@ export const OrderForm: React.FC<OrderFormProps> = ({ onOrderCreated, onCancel }
                   type="text"
                   value={destAddress}
                   onChange={(e) => handleDestInputChange(e.target.value)}
-                  placeholder="Ketik alamat tujuan, gang, nomor rumah, atau desa..."
+                  onBlur={handleDestBlur}
+                  placeholder="Ketik alamat tujuan, desa di Purbolinggo, atau tujuan ke Metro/Lamteng..."
                   required
                   className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 pl-11 pr-10 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:border-blue-600 focus:bg-white transition"
                 />
@@ -586,7 +809,7 @@ export const OrderForm: React.FC<OrderFormProps> = ({ onOrderCreated, onCancel }
 
               {/* Suggestions Dropdown for Destination */}
               {destSuggestions.length > 0 && (
-                <div className="absolute z-20 left-0 right-0 mt-1 bg-white border border-slate-200 rounded-2xl shadow-xl max-h-60 overflow-y-auto divide-y divide-slate-100">
+                <div className="absolute z-20 left-0 right-0 mt-1 bg-white border border-slate-200 rounded-2xl shadow-xl max-h-64 overflow-y-auto divide-y divide-slate-100">
                   {destSuggestions.map((sug, idx) => (
                     <button
                       key={idx}
@@ -599,40 +822,34 @@ export const OrderForm: React.FC<OrderFormProps> = ({ onOrderCreated, onCancel }
                       className="w-full text-left px-4 py-2.5 hover:bg-red-50 text-xs text-slate-800 flex items-start gap-2.5 transition"
                     >
                       <Navigation className="w-4 h-4 text-red-500 shrink-0 mt-0.5" />
-                      <div>
-                        <span className="font-semibold block">{sug.name}</span>
-                        <span className="text-[10px] text-slate-400 font-mono">[{sug.lat.toFixed(4)}, {sug.lng.toFixed(4)}]</span>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          <span className="font-bold text-slate-900">{sug.name}</span>
+                          {sug.categoryLabel && (
+                            <span className="text-[9px] font-black uppercase px-1.5 py-0.5 rounded bg-red-100 text-red-700">
+                              {sug.categoryLabel}
+                            </span>
+                          )}
+                          {sug.isCurated && (
+                            <span className="text-[9px] font-black px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-700">
+                              PATOKAN RESMI
+                            </span>
+                          )}
+                        </div>
+                        <span className="text-[10px] text-slate-500 block truncate">{sug.displayName}</span>
                       </div>
                     </button>
                   ))}
                 </div>
               )}
 
-              {/* Quick Village Selection Pills for Purbolinggo */}
-              <div className="pt-2">
-                <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block mb-1.5">
-                  Pilih Cepat Desa / Wilayah di Purbolinggo:
+              {/* Detected Landmark Confirmation Badge */}
+              <div className="mt-1 flex items-center justify-between text-[11px] text-slate-500">
+                <span className="flex items-center gap-1 truncate">
+                  <span className="font-semibold text-red-600">Titik B:</span>
+                  <span className="font-mono text-slate-600">[{destCoords[0].toFixed(4)}, {destCoords[1].toFixed(4)}]</span>
                 </span>
-                <div className="flex flex-wrap gap-1.5 max-h-28 overflow-y-auto p-1 bg-slate-50 rounded-xl border border-slate-200">
-                  {POPULAR_LOCATIONS.map((loc) => (
-                    <button
-                      key={loc.name}
-                      type="button"
-                      onClick={() => {
-                        setDestCoords([loc.lat, loc.lng]);
-                        setDestAddress(loc.address);
-                        setDestSuggestions([]);
-                      }}
-                      className={`text-xs font-semibold px-2.5 py-1 rounded-lg border transition ${
-                        destAddress.includes(loc.name.replace('Desa ', ''))
-                          ? 'bg-blue-600 text-white border-blue-600 shadow-xs'
-                          : 'bg-white hover:bg-blue-50 text-slate-700 border-slate-200'
-                      }`}
-                    >
-                      {loc.name}
-                    </button>
-                  ))}
-                </div>
+                <span className="text-[10px] text-slate-400">Ketik alamat tujuan / desa untuk auto-sync</span>
               </div>
             </div>
 
@@ -646,19 +863,19 @@ export const OrderForm: React.FC<OrderFormProps> = ({ onOrderCreated, onCancel }
                 {isCalculatingRoute && (
                   <span className="text-[10px] text-blue-600 font-bold flex items-center gap-1 animate-pulse">
                     <Loader2 className="w-3 h-3 animate-spin" />
-                    Menghitung rute jalan...
+                    Menghitung rute jalan raya OSRM...
                   </span>
                 )}
               </span>
               
-              <div className="flex items-center gap-2">
-                <span className="text-xs font-black text-blue-600 bg-blue-50 px-2.5 py-1 rounded-lg border border-blue-200 flex items-center gap-1">
-                  <Route className="w-3.5 h-3.5" />
-                  <span>Jarak Jalan: {effectiveDistance} KM</span>
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="text-xs font-black text-blue-700 bg-blue-50 px-3 py-1 rounded-lg border border-blue-200 flex items-center gap-1.5">
+                  <Route className="w-4 h-4 text-blue-600" />
+                  <span>Jarak Nyata: {effectiveDistance} KM</span>
                 </span>
-                <span className="text-xs font-bold text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-lg border border-emerald-200 flex items-center gap-1">
-                  <Clock className="w-3.5 h-3.5" />
-                  <span>~{routeData.durationMinutes} Menit</span>
+                <span className="text-xs font-bold text-emerald-700 bg-emerald-50 px-3 py-1 rounded-lg border border-emerald-200 flex items-center gap-1.5">
+                  <Clock className="w-4 h-4 text-emerald-600" />
+                  <span>~{routeData.durationMinutes} Menit Tempuh</span>
                 </span>
               </div>
             </div>
@@ -669,10 +886,16 @@ export const OrderForm: React.FC<OrderFormProps> = ({ onOrderCreated, onCancel }
               roadPolyline={routeData.waypoints}
               activeSelectionMode={activeSelectMode}
               onSelectCoords={handleMapSelect}
+              onSwapPoints={handleSwapPoints}
+              pickupAddress={pickupAddress}
+              destinationAddress={destAddress}
+              showPresets={false}
               interactive={true}
-              height="360px"
+              height="380px"
             />
           </div>
+
+
 
           {/* 5. Detail Permintaan & Catatan */}
           <div className="space-y-4 pt-2">
